@@ -1,0 +1,23 @@
+{
+  "name": "thuisbezorgd-scraper",
+  "version": "1.0.0",
+  "description": "Scrape Thuisbezorgd.nl/Takeaway.com restaurant website and get all current orders",
+  "main": "./src/thuisbezorgd-scraper",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Thuisbezorgd.nl",
+    "Takeaway.com"
+  ],
+  "bin": {
+    "thuisbezorgd": "./bin/thuisbezorgd-scraper"
+  },
+  "author": "Rob Juurlink",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "request": "^2.81.0",
+    "cheerio": "^1.0.0-rc.1",
+    "request-cookies": "^1.1.0"
+  }
+}

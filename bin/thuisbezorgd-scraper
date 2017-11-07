@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+const path = require('path');
+const thuisbezorgdScraper = require(path.join(__dirname, '..', 'src', 'thuisbezorgd-scraper'));
+
+thuisbezorgdScraper.scrape()
+    .then(orders => console.log(JSON.stringify({orders: orders}, null, 4)))
+    .catch(error => {
+        console.error('Error:');
+        console.error(`Failed to load the orders: ${error}`);
+        console.error('');
+        process.exit(1);
+    });
