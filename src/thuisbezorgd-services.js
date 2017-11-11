@@ -4,6 +4,8 @@
 const request = require('request');
 // path utility class
 const path = require('path');
+// Date manipulation library.
+const moment = require('moment');
 // Handle request cookies.
 const Cookie = require('request-cookies').Cookie;
 
@@ -210,11 +212,15 @@ function parseOrderListHtml(html) {
         const $tbodyItem = $(tbodyItem);
         const id = ($tbodyItem.attr('rel') || '').replace('#o', '').trim();
         const status = getStatusFromClassName($tbodyItem.attr('class'));
-        const time = $('td.time', tbodyItem).text().trim();
-        const timeDelivery = $('td.time-delivery', tbodyItem).text().trim() || time;
+        // Formats a string to the ISO8601 standard.
+        // It always returns a timestamp in UTC!
+        //https://momentjs.com/docs/#/displaying/as-iso-string/
+        const time = moment($('td.time', tbodyItem).text().trim(), 'HH:mm').toISOString();
+        const timeDelivery = moment($('td.time-delivery', tbodyItem).text().trim() || time, 'HH:mm').toISOString();
         const orderCode = $('td.order-code', tbodyItem).text().trim();
         const city = $('td.city', tbodyItem).text().trim();
-        const amount = $('td.amount', tbodyItem).text().substr(1).replace(',', '.').replace(/\s+/, '');
+        // Amount in cents
+        const amount = Number.parseInt($('td.amount', tbodyItem).text().substr(1).replace(/[,.\s]+/g, ''), 10);
         const address = $('td[colspan=2]', tbodyItem).text().trim();
         const distance = $('td.distance', tbodyItem).text().replace(',', '.').replace(/\s+/, '');
 
