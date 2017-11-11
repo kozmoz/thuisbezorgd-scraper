@@ -12,7 +12,7 @@ Intended for restaurant owners.
 Usage
 -----
 
-$ thuisbezorgd-scraper <username> <password>
+    $ thuisbezorgd-scraper <username> <password>
 
 
 
