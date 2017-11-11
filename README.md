@@ -23,8 +23,8 @@ To make it a global install type this:
     
 Once installed globally, you can run it from any location.    
 
-Usage
------
+Usage Command Line
+------------------
 To list all current orders for example, execute <code>thuisbezorgd-scraper</code> with respectively the username and password. 
 Optionally add the <code>--verbose</code> flag to see extra logging during execution.
 
@@ -81,6 +81,25 @@ The output of the command above, should looks like this for example:
 		]
 	}
 
+Usage in Code
+-------------
+Require <code>thuisbezorgd-scraper</code> in your program and call <code>scrape()</code> with the username and password:  
+
+    const thuisbezorgdScraper = require('thuisbezorgd-scraper');
+    const options = {
+        username: 'username',
+        password: 'password',
+        verbose: false
+    }
+    thuisbezorgdScraper.scrape(options)
+        .then(orders => {
+        	// Print orders to console.
+            console.log(JSON.stringify({orders: orders}, null, 4)));
+        }
+        .catch(error => {
+            console.log('ERROR: Failed to load the orders:');
+            console.log(error);
+        });
 
 Development
 ===========
