@@ -1,0 +1,138 @@
+<div id="order_timeline">
+    <div class="order-status first done">
+        ZL41AT          <span class="time">
+                        18:34           </span>
+    </div>
+
+    <div class="connector"></div>
+    <div class="order-status done next confirm-change"
+         rel="OQP013OQOO;confirmed">
+        <span class="hide confirm-change-text">Switch back from status "Delivery" to "Confirmed"?                               </span>
+        Confirmed                               <span class="time">
+                                        18:35                           </span>
+    </div>
+    <div class="connector"></div>
+    <div class="order-status done next confirm-change"
+         rel="OQP013OQOO;kitchen">
+        Kitchen                                                 <span class="hide confirm-change-text">Switch back from status "Delivery" to "Kitchen"?                         </span>
+        <span class="time">
+                                19:54                   </span>
+    </div>
+    <div class="connector"></div>
+    <div class="order-status done"
+         rel="OQP013OQOO;delivery">
+        Delivery                        <span class="time">
+                                20:01                   </span>
+    </div>
+    <div class="clear"></div>
+</div>
+
+<div id="order_details">
+
+    <div class="summary">
+        <table class="order-info-heading">
+            <tr>
+                <td>Delivery</td>
+            </tr>
+        </table>
+
+        <div class="content">
+            <p>Ineke Grooters<br />Schaapskooiweg 15<br />7443PP<span style="padding-left: 10px; color: #999;">2,4 km</span><br />Nijverdal<br />0631291291</p>
+
+            <p><strong>Paid electronically</strong></p>
+
+            <div id="delivery_time">
+                Delivery at <strong class="time-delivery ">19:20</strong>                                                                       <p class="no-print"><input type="button" class="button small" id="delivery_time_change_button"
+                                                                                                                                                                           value="Change delivery time" /></p>
+            </div>
+
+            <div id="delivery_time_change" class="hide">
+
+                <form method="post" action="" class="no-print">
+                    <input type="hidden" name="id" value="OQP013OQOO" />
+                    <input type="hidden" name="time_type" value="at" />
+                    <table>
+                        <tr>
+                            <td style="padding-right:5px;"><input type="button" class="button update-time delivery-at subtract" value="-" /></td>
+                            <td style="padding-right:1px;"><input type="text" class="time" name="delivery_time_hours"
+                                                                  value="19" /></td>
+                            <td><input type="text" name="delivery_time_minutes" class="time"
+                                       value="20" /></td>
+                            <td style="padding-left:5px;"><input type="button" class="button update-time delivery-at add" value="+" /></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="text-align:center;">
+                                <p>
+                                    <input type="submit" class="button small" rel="OQP013OQOO;confirmed"
+                                           value="Update" />
+                                    <input type="button" class="button small text" id="delivery_time_change_cancel"
+                                           value="Cancel" />
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="products">
+
+        <table class="order-info-heading">
+            <tr>
+                <td>Products</td>
+            </tr>
+        </table>
+        <div class="content">
+            <table class="products">
+                <thead>
+                <tr>
+                    <th style="width:20px;"></th>
+                    <th style="width:360px;"></th>
+                    <th style="width:20px;"></th>
+                    <th style="width:50px;"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td style="vertical-align:top;">1</td>
+                    <td>
+                        [Combi boxen] Combibox rolls                  </td>
+                    <td style="vertical-align:top;">&euro;</td>
+                    <td style="text-align:right;vertical-align:top;">
+                        32,50                                         </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="3">+ 2 persoons                                                                            </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;">1</td>
+                    <td>
+                        [Combi boxen] Combibox starter                </td>
+                    <td style="vertical-align:top;">&euro;</td>
+                    <td style="text-align:right;vertical-align:top;">
+                        13,95                                         </td>
+                </tr>
+
+
+                <tr>
+                    <td ></td>
+                    <td>Delivery costs</td>
+                    <td>&euro;</td>
+                    <td style="text-align:right;">1,50</td>
+                </tr>
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                    <td style="font-weight:bold">&euro;</td>
+                    <td style="font-weight:bold;text-align:right;">47,95</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clear"></div>
+</div>

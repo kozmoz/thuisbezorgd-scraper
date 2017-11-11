@@ -14,6 +14,7 @@ function scrape() {
     let username;
     let password;
     let debug = false;
+    let verbose = false;
 
     if (argv.length > 2) {
         username = argv[2];
@@ -21,9 +22,17 @@ function scrape() {
     if (argv.length > 3) {
         password = argv[3];
     }
-    if (argv.length > 5) {
-        debug = '--debug' === argv[4];
+    if (argv.length > 4) {
+        debug |= '--debug' === argv[4];
+        verbose |= '--verbose' === argv[4];
     }
+    if (argv.length > 5) {
+        debug |= '--debug' === argv[5];
+        verbose |= '--verbose' === argv[5];
+    }
+
+    console.log('==== debug: ' + debug);
+    console.log('==== verbose: ' + verbose);
 
     // Test if username and password are both supplied.
     if (!username || !password) {
@@ -35,6 +44,7 @@ function scrape() {
 
     const configuration = {
         debug: debug,
+        verbose: verbose,
         thuisbezorgdUsername: username,
         thuisbezorgdPassword: password
     };

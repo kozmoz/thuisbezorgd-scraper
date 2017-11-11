@@ -29,6 +29,7 @@ exports.getOrders = function (configuration) {
 
     // Show console logging output?
     let debug = configuration.debug;
+    let verbose = configuration.verbose;
 
     return new Promise((resolveFn, rejectFn) => {
 
@@ -43,8 +44,8 @@ exports.getOrders = function (configuration) {
             return;
         }
 
-        // Return demo data.
-        if (configuration.debug) {
+        // Return demo data in case of --debug flag.
+        if (debug) {
             const demoData = [{
                 'id': 'NPPP75771O',
                 'orderCode': 'ELMNZX',
@@ -75,7 +76,6 @@ exports.getOrders = function (configuration) {
             return;
         }
 
-
         // Call the real Thuisbezorgd.nl service.
         const headersGet = {
             'Host': 'orders.takeaway.com',
@@ -104,10 +104,9 @@ exports.getOrders = function (configuration) {
         // First GET to get the session cookie and secret request key.
         request.get({url: urlMain, headers: headersGet}, function (error, response, html) {
 
-            // console.log('response: ' + JSON.stringify(response.headers['set-cookie']));
-            // process.exit(0);
-            // return;
-
+            if (verbose) {
+                console.log('First GET cookie response: ' + JSON.stringify(response.headers['set-cookie']));
+            }
 
             // Error.
             if (error) {
@@ -138,8 +137,8 @@ exports.getOrders = function (configuration) {
             // Update HTTP headers with sessions cookie.
             headersPost.Cookie = cookies.join(';');
 
-            if (debug) {
-                console.log('HTML headers: ', JSON.stringify(headersPost));
+            if (verbose) {
+                console.log('HTML headers of login POST: ', JSON.stringify(headersPost));
             }
 
             let form = {
@@ -151,7 +150,11 @@ exports.getOrders = function (configuration) {
             };
 
             // Login request
-            request.post({url: urlMain, form: form, headers: headersPost}, function (error) {
+            request.post({url: urlMain, form: form, headers: headersPost}, function (error, response, html) {
+
+                if (verbose) {
+                    console.log('Login statusCode: ' + response.statusCode);
+                }
 
                 // Error.
                 if (error) {
@@ -164,7 +167,7 @@ exports.getOrders = function (configuration) {
                 // Start new request to get all orders.
                 request.get({url: urlOrders, headers: headersPost}, function (error, response, html) {
 
-                    if (debug) {
+                    if (verbose) {
                         console.log('HTML GET: ', html);
                     }
 
@@ -173,15 +176,15 @@ exports.getOrders = function (configuration) {
 
                     // No orders, resolve with empty array.
                     if (message.indexOf('No orders yet') !== -1) {
-                        if (debug) {
-                            console.log('No orders yet');
+                        if (verbose) {
+                            console.log('Found the "No orders yet" label, so we assume there are no orders');
                         }
                         resolveFn([]);
                         return;
                     }
 
                     // Parse HTML for orders.
-                    let orders = parseOrdersHtml(html);
+                    let orders = parseOrderListHtml(html);
 
                     // Always resolves
                     updateWithDetails(orders, headersPost, resolveFn);
@@ -191,66 +194,87 @@ exports.getOrders = function (configuration) {
     });
 };
 
-function parseOrdersHtml(html) {
+function parseOrderListHtml(html) {
 
     // Debugging.
     //html = fs.readFileSync('orders.html', 'utf-8');
 
     //console.log('HTML: ', html);
     let orders = [];
-    let $ = cheerio.load(html);
-    $('tbody.status-delivery.narrow').filter(function (index, item) {
+    const $ = cheerio.load(html);
+    $('tbody.narrow').filter(function (index, tbodyItem) {
 
-        let rel = ($(item).attr('rel') || '').replace('#o', '');
-        let time = $('td.time', item).text();
-        let timeDelivery = $('td.time-delivery', item).text().trim();
-        let orderCode = $('td.order-code', item).text();
-        let city = $('td.city', item).text();
-        let amount = $('td.amount', item).text().substr(1).replace(',', '.').trim();
-        let address = $('td[colspan=2]', item).text().trim();
+        const $tbodyItem = $(tbodyItem);
+        let id = ($tbodyItem.attr('rel') || '').replace('#o', '').trim();
+        let status = getStatusFromClassName($tbodyItem.attr('class'));
+        let time = $('td.time', tbodyItem).text().trim();
+        let timeDelivery = $('td.time-delivery', tbodyItem).text().trim() || time;
+        let orderCode = $('td.order-code', tbodyItem).text().trim();
+        let city = $('td.city', tbodyItem).text().trim();
+        let amount = $('td.amount', tbodyItem).text().substr(1).replace(',', '.').replace(/\s+/,'');
+        let address = $('td[colspan=2]', tbodyItem).text().trim();
+        let distance = $('td.distance', tbodyItem).text().replace(',', '.').replace(/\s+/,'');
 
         orders.push({
-            id: rel,
-            orderCode: orderCode,
-            time: time,
-            timeDelivery: timeDelivery || time,
-            amount: amount,
-            city: city,
-            address: address
+            id,
+            orderCode,
+            status,
+            time,
+            timeDelivery,
+            amount,
+            city,
+            address,
+            distance
         });
     });
 
     return orders;
 }
 
-
-function parseDetailsHtml(html) {
-
-    // Debugging.
-    //html = fs.readFileSync('sample-html/details.html', 'utf-8');
-    //console.log('HTML: ', html);
+/**
+ * Parse html and get the details like type of delivery, way of payment, name, phone number and products.
+ *
+ * @param {String} html Raw HTML of details page
+ * @return {Object} Object with properties for details; delivery, paid, name, phoneNumber and products
+ */
+function parseOrderDetailsHtml(html) {
 
     let details = {};
     let $ = cheerio.load(html);
 
     // DELIVERY
-    details.delivery = ($('#order_details .summary .order-info-heading td').text() || '').toUpperCase();
+    details.delivery = $('#order_details .summary .order-info-heading td').text();
 
     // Paid electronically / Customer pays in cash, exact
     details.paid = $('#order_details .content p:nth-child(2)').text();
 
-    let addressHtml = $('#order_details .content > p').html();
-    // details.name = decodeHtml(addressHtml.split('<br>')[0]);
     // Get text of first textNode. (and also get the HTML encoded characters right).
     details.name = $('#order_details .content > p').contents().eq(0).text();
 
     // Phone number is the last line of the name, address text.
-    let addressHtmlSplitted = addressHtml.split('<br>');
+    let addressHtml = $('#order_details .content > p').html();
+    let addressHtmlSplitted = addressHtml.split(/<br ?\/?>/g);
     let phoneNumber = addressHtmlSplitted.pop();
     if (/[0-9 ()+-]{10,16}/.test(phoneNumber)) {
-        // Test if it really is phone number.
+        // Test if it really is a phone number.
         details.phoneNumber = phoneNumber;
     }
+
+    // Parse products.
+    let products = [];
+    let productRows = $('table.products tbody tr');
+    productRows.each((index, item) => {
+            const $row = $(item);
+            const rowText = trimExcessiveWhitespace($row.text());
+            if ($row.find('td').length === 2) {
+                // Addition to the previous row.
+                products.push(`${products.pop()} ${rowText}`);
+            } else {
+                products.push(rowText);
+            }
+        }
+    );
+    details.products = products;
 
     return details;
 }
@@ -291,8 +315,13 @@ function updateWithDetails(orders, headersPost, allDone) {
                         console.error('Accessing url ' + urlDetails + ' to get details failed: ', error);
 
                     } else {
+
+                        if (true) {
+                            console.log('details HTML: ', html);
+                        }
+
                         // Parse HTML and update the order with the details.
-                        let details = parseDetailsHtml(html);
+                        let details = parseOrderDetailsHtml(html);
                         tmpOrder.delivery = details.delivery;
                         tmpOrder.paid = details.paid;
                         tmpOrder.name = details.name;
@@ -306,6 +335,40 @@ function updateWithDetails(orders, headersPost, allDone) {
     }
 
     Promise.all(promises).then(() => allDone(orders));
+}
+
+
+/**
+ * Trim excessive whitespace within the string and trim leading and trailing whitespace completely.
+ *
+ * @param {String} text String to trim
+ * @return {String} Trimmed string or empty string in case the given parameter was not truthy
+ */
+function trimExcessiveWhitespace(text) {
+    return (text || '').replace(/\s+/g, ' ').trim();
+}
+
+
+/**
+ * Determine order status based on list of class names.
+ *
+ * @param {String} className String with single class name or multiple class names
+ * @return {String} Status 'Confirmed', 'Delivery', 'Kitchen' or an empty string
+ */
+function getStatusFromClassName(className) {
+    return ucFirst((className || '').trim().split(/\s+/).find(item => item.indexOf('status-') !== -1).replace('status-', ''));
+}
+
+
+/**
+ * Convert first character to upper case.
+ *
+ * @param {String} text
+ * @return {String}
+ */
+function ucFirst(text) {
+    let result = (text || '').trim();
+    return result.substring(0, 1).toUpperCase() + result.substring(1).toLowerCase();
 }
 
 
@@ -332,3 +395,9 @@ let fields = {
 };
 */
 
+// For unit testing purposes.
+exports._ucFirst = ucFirst;
+exports._trimExcessiveWhitespace = trimExcessiveWhitespace;
+exports._getStatusFromClassName = getStatusFromClassName;
+exports._parseOrderListHtml = parseOrderListHtml;
+exports._parseOrderDetailsHtml = parseOrderDetailsHtml;
