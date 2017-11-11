@@ -168,15 +168,25 @@ function getOrders(configuration) {
                     username: thuisbezorgdUsername,
                     password: thuisbezorgdPassword
                 }
-            }, (error, response) => {
+            }, (error, response, html) => {
 
                 if (verbose) {
                     cli.debug('Login statusCode: ' + response.statusCode);
+                    cli.debug('Login response html: ' + html);
                 }
 
                 // Error.
                 if (error) {
                     rejectFn('Accessing url ' + urlMain + ' to login failed: ' + JSON.stringify(error));
+                    return;
+                }
+
+                // Test login html response for error message.
+                // <p class="error">Enter your username and password. You can find these on your invoices.</p>
+                const $ = cheerio.load(html);
+                const errorMessage = $('p.error').text().trim();
+                if (errorMessage) {
+                    rejectFn(`Login failed with message: ${errorMessage}`);
                     return;
                 }
 

@@ -1,5 +1,8 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.1.2-SNAPSHOT 
+- Added extra check to test if login was successful
+
 ### 1.1.1 (November 12, 2017)
 - Added cli toolkit for command line parsing.
 - Code cleanup 
