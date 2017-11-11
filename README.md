@@ -11,7 +11,7 @@ Intended for restaurant owners.
 
 Install
 -------
-You Either install it as local dependency to a project, or install it globally to be able to use it on the command line.
+You either install it as local dependency to a project, or install it globally to be able to use it on the command line.
 
 To install <code>thuisbezorgd-scraper</code> locally as a dependency to the project, on the command line type this:
 
@@ -25,8 +25,9 @@ Once installed globally, you can run it from any location.
 
 Usage Command Line
 ------------------
-To list all current orders for example, execute <code>thuisbezorgd-scraper</code> with respectively the username and password. 
-Optionally add the <code>--verbose</code> flag to see extra logging during execution.
+To list all current orders for example, execute <code>thuisbezorgd-scraper</code> with respectively the 
+<code>--username</code> and <code>--password</code> option. Optionally add the <code>--verbose</code> 
+flag to see extra logging during execution.
 
     $ thuisbezorgd-scraper --username <username> --password <password> [--verbose]
 
@@ -83,7 +84,8 @@ The output of the command above, should looks like this for example:
 
 Usage in Code
 -------------
-Require <code>thuisbezorgd-scraper</code> in your program and call <code>scrape()</code> with the username and password:  
+Require <code>thuisbezorgd-scraper</code> in your program and call <code>scrape()</code> 
+with the username and password supplied within a configuration object:  
 
     const thuisbezorgdScraper = require('thuisbezorgd-scraper');
     const options = {
@@ -93,9 +95,9 @@ Require <code>thuisbezorgd-scraper</code> in your program and call <code>scrape(
     }
     thuisbezorgdScraper.scrape(options)
         .then(orders => {
-        	// Print orders to console.
-            console.log(JSON.stringify({orders: orders}, null, 4)));
-        }
+            // Pretty print orders to console.
+            console.log(JSON.stringify({orders: orders}, null, 4));
+        })
         .catch(error => {
             console.log('ERROR: Failed to load the orders:');
             console.log(error);
