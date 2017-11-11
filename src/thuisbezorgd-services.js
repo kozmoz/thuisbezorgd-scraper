@@ -27,11 +27,11 @@ const urlDetails = 'https://orders.takeaway.com/orders/details';
  * @param {Object} configuration Configuration object
  * @return {Promise} A promise that resolves with all the orders as JSON object
  */
-function getOrders (configuration) {
+function getOrders(configuration) {
 
     // Show console logging output?
-    let debug = configuration.debug;
-    let verbose = configuration.verbose;
+    const debug = configuration.debug;
+    const verbose = configuration.verbose;
 
     return new Promise((resolveFn, rejectFn) => {
 
@@ -118,19 +118,15 @@ function getOrders (configuration) {
             }
 
             // Get the time? key.
-            let $ = cheerio.load(html);
-            let key = $('input[name="key"]').val();
+            const $ = cheerio.load(html);
+            const key = $('input[name="key"]').val();
 
             // Get the session cookie.
-            let rawCookies = response.headers['set-cookie'];
-            let cookies = [];
-            for (let prop in rawCookies) {
-                if (!rawCookies.hasOwnProperty(prop)) {
-                    continue;
-                }
-                let cookie = new Cookie(rawCookies[prop]);
-                cookies.push(cookie.key + '=' + cookie.value);
-            }
+            const rawCookies = response.headers['set-cookie'];
+            const cookies = rawCookies.map(cookie => {
+                const cookieObj = new Cookie(cookie);
+                return `${cookieObj.key}=${cookieObj.value}`;
+            });
 
             // Update HTTP headers with sessions cookie.
             headersPost.Cookie = cookies.join(';');
@@ -139,16 +135,18 @@ function getOrders (configuration) {
                 console.log('HTML headers of login POST: ', JSON.stringify(headersPost));
             }
 
-            let form = {
-                key: key,
-                login: true,
-                language: 'en',
-                username: thuisbezorgdUsername,
-                password: thuisbezorgdPassword
-            };
-
             // Login request
-            request.post({url: urlMain, form: form, headers: headersPost}, function (error, response, html) {
+            request.post({
+                url: urlMain,
+                headers: headersPost,
+                form: {
+                    key,
+                    login: true,
+                    language: 'en',
+                    username: thuisbezorgdUsername,
+                    password: thuisbezorgdPassword
+                }
+            }, (error, response) => {
 
                 if (verbose) {
                     console.log('Login statusCode: ' + response.statusCode);
@@ -163,14 +161,17 @@ function getOrders (configuration) {
                 // The log-in was probably successful.
 
                 // Start new request to get all orders.
-                request.get({url: urlOrders, headers: headersPost}, function (error, response, html) {
+                request.get({
+                    url: urlOrders,
+                    headers: headersPost
+                }, (error, response, html) => {
 
                     if (verbose) {
                         console.log('HTML GET: ', html);
                     }
 
-                    let $ = cheerio.load(html);
-                    let message = $('p.list').text();
+                    const $ = cheerio.load(html);
+                    const message = $('p.list').text();
 
                     // No orders, resolve with empty array.
                     if (message.indexOf('No orders yet') !== -1) {
@@ -182,7 +183,7 @@ function getOrders (configuration) {
                     }
 
                     // Parse HTML for orders.
-                    let orders = parseOrderListHtml(html);
+                    const orders = parseOrderListHtml(html);
 
                     // Always resolves
                     updateWithDetails(urlDetails, orders, headersPost, resolveFn, verbose);
@@ -204,7 +205,7 @@ function parseOrderListHtml(html) {
 
     const orders = [];
     const $ = cheerio.load(html);
-    $('tbody.narrow').filter(function (index, tbodyItem) {
+    $('tbody.narrow').filter((index, tbodyItem) => {
 
         const $tbodyItem = $(tbodyItem);
         const id = ($tbodyItem.attr('rel') || '').replace('#o', '').trim();
@@ -294,24 +295,17 @@ function parseOrderDetailsHtml(html) {
  */
 function updateWithDetails(url, orders, headersPost, allDone, verbose) {
 
-    let promises = [];
-
+    const promises = [];
     orders.forEach(order => {
-
-        // Mutable variable should not be accessible from closure.
-        // https://stackoverflow.com/questions/16724620/mutable-variable-is-accessible-from-closure-how-can-i-fix-this
-        // Todo: Do not make functions within a loop/
 
         promises.push(new Promise(resolve => {
 
-            // Get details POST request.
-            let form = {
-                id: order.id
-            };
             request.post({
-                form,
                 url,
-                headers: headersPost
+                headers: headersPost,
+                form: {
+                    id: order.id
+                }
             }, (error, response, html) => {
 
                 // Error.
@@ -328,7 +322,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
                 }
 
                 // Parse HTML and update the order with the details.
-                let details = parseOrderDetailsHtml(html);
+                const details = parseOrderDetailsHtml(html);
 
                 // Merge properties to the order.
                 //https://stackoverflow.com/questions/171251/how-can-i-merge-properties-of-two-javascript-objects-dynamically#171256
@@ -373,11 +367,13 @@ function getStatusFromClassName(className) {
  * @return {String}
  */
 function ucFirst(text) {
-    let result = (text || '').trim();
+    const result = (text || '').trim();
     return result.substring(0, 1).toUpperCase() + result.substring(1).toLowerCase();
 }
 
 
+// Todo: convert times to time object.
+// Todo: Convert amount to amount in cents
 /*
 let fields = {
     orderCode: order.orderCode,
