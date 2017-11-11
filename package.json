@@ -25,7 +25,6 @@
     "cheerio": "^1.0.0-rc.1",
     "cli": "^1.0.1",
     "moment": "^2.19.1",
-    "node": "*",
     "request": "^2.81.0",
     "request-cookies": "^1.1.0"
   },
