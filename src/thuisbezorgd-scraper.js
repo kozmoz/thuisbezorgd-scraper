@@ -31,9 +31,6 @@ function scrape() {
         verbose |= '--verbose' === argv[5];
     }
 
-    console.log('==== debug: ' + debug);
-    console.log('==== verbose: ' + verbose);
-
     // Test if username and password are both supplied.
     if (!username || !password) {
         console.error('Error:');

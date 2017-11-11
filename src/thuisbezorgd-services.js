@@ -2,17 +2,19 @@
 // https://www.npmjs.com/package/request
 // Execute http requests.
 const request = require('request');
+// path utility class
+const path = require('path');
 // Handle request cookies.
 const Cookie = require('request-cookies').Cookie;
 
 // Fast, flexible & lean implementation of core jQuery designed specifically for the server.
 // https://github.com/cheeriojs/cheerio
 const cheerio = require('cheerio');
+// Read version info of thuisbezorgd-scraper.
+const packageJson = require(path.join(__dirname, '..', 'package.json'));
 
-// Morgan node module, for request logging.
 
-const USER_AGENT_STRING = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 ' +
-    '(KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36';
+const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
 
 // Thuisbezorgd.nl URLs.
 const urlMain = 'https://orders.takeaway.com/';
@@ -25,7 +27,7 @@ const urlDetails = 'https://orders.takeaway.com/orders/details';
  * @param {Object} configuration Configuration object
  * @return {Promise} A promise that resolves with all the orders as JSON object
  */
-exports.getOrders = function (configuration) {
+function getOrders (configuration) {
 
     // Show console logging output?
     let debug = configuration.debug;
@@ -79,30 +81,26 @@ exports.getOrders = function (configuration) {
         // Call the real Thuisbezorgd.nl service.
         const headersGet = {
             'Host': 'orders.takeaway.com',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
             'User-Agent': USER_AGENT_STRING,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'nl,en-US;q=0.8,en;q=0.6'
+            'Accept': 'text/html',
+            'Accept-Language': 'en-US'
         };
 
-        let headersPost = {
-            'Host': 'orders.takeaway.com',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'User-Agent': USER_AGENT_STRING,
+        // POST headers.
+        // GET headers will be added to POST headers later.
+        const headersPost = {
             'Cookie': '',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Origin': 'https://orders.takeaway.com',
-            'Referer': 'https://orders.takeaway.com/',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
-            // 'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'nl,en-US;q=0.8,en;q=0.6'
+            'Referer': 'https://orders.takeaway.com/'
         };
 
+        // Add POST headers with GET headers.
+        Object.assign(headersPost, headersGet);
+
+
         // First GET to get the session cookie and secret request key.
-        request.get({url: urlMain, headers: headersGet}, function (error, response, html) {
+        request.get({url: urlMain, headers: headersGet}, (error, response, html) => {
 
             if (verbose) {
                 console.log('First GET cookie response: ' + JSON.stringify(response.headers['set-cookie']));
@@ -187,33 +185,37 @@ exports.getOrders = function (configuration) {
                     let orders = parseOrderListHtml(html);
 
                     // Always resolves
-                    updateWithDetails(orders, headersPost, resolveFn);
+                    updateWithDetails(urlDetails, orders, headersPost, resolveFn, verbose);
                 });
             });
         });
     });
 };
 
+
+/**
+ * Parse the given HTML get the list of current orders.
+ * An order contains an id, status, time, delivery time, order code, city, amount, address, distance, etc.
+ *
+ * @param {String} html Raw HTML of orders page
+ * @return {[]} Array with objects which contain properties for id, orderCode, status, time, timeDelivery, amount, city, address, distance
+ */
 function parseOrderListHtml(html) {
 
-    // Debugging.
-    //html = fs.readFileSync('orders.html', 'utf-8');
-
-    //console.log('HTML: ', html);
-    let orders = [];
+    const orders = [];
     const $ = cheerio.load(html);
     $('tbody.narrow').filter(function (index, tbodyItem) {
 
         const $tbodyItem = $(tbodyItem);
-        let id = ($tbodyItem.attr('rel') || '').replace('#o', '').trim();
-        let status = getStatusFromClassName($tbodyItem.attr('class'));
-        let time = $('td.time', tbodyItem).text().trim();
-        let timeDelivery = $('td.time-delivery', tbodyItem).text().trim() || time;
-        let orderCode = $('td.order-code', tbodyItem).text().trim();
-        let city = $('td.city', tbodyItem).text().trim();
-        let amount = $('td.amount', tbodyItem).text().substr(1).replace(',', '.').replace(/\s+/,'');
-        let address = $('td[colspan=2]', tbodyItem).text().trim();
-        let distance = $('td.distance', tbodyItem).text().replace(',', '.').replace(/\s+/,'');
+        const id = ($tbodyItem.attr('rel') || '').replace('#o', '').trim();
+        const status = getStatusFromClassName($tbodyItem.attr('class'));
+        const time = $('td.time', tbodyItem).text().trim();
+        const timeDelivery = $('td.time-delivery', tbodyItem).text().trim() || time;
+        const orderCode = $('td.order-code', tbodyItem).text().trim();
+        const city = $('td.city', tbodyItem).text().trim();
+        const amount = $('td.amount', tbodyItem).text().substr(1).replace(',', '.').replace(/\s+/, '');
+        const address = $('td[colspan=2]', tbodyItem).text().trim();
+        const distance = $('td.distance', tbodyItem).text().replace(',', '.').replace(/\s+/, '');
 
         orders.push({
             id,
@@ -231,16 +233,17 @@ function parseOrderListHtml(html) {
     return orders;
 }
 
+
 /**
- * Parse html and get the details like type of delivery, way of payment, name, phone number and products.
+ * Parse the given HTML and get the details of an order, like the type of delivery, way of payment, the name, phone number, products etc.
  *
  * @param {String} html Raw HTML of details page
  * @return {Object} Object with properties for details; delivery, paid, name, phoneNumber and products
  */
 function parseOrderDetailsHtml(html) {
 
-    let details = {};
-    let $ = cheerio.load(html);
+    const details = {};
+    const $ = cheerio.load(html);
 
     // DELIVERY
     details.delivery = $('#order_details .summary .order-info-heading td').text();
@@ -252,17 +255,17 @@ function parseOrderDetailsHtml(html) {
     details.name = $('#order_details .content > p').contents().eq(0).text();
 
     // Phone number is the last line of the name, address text.
-    let addressHtml = $('#order_details .content > p').html();
-    let addressHtmlSplitted = addressHtml.split(/<br ?\/?>/g);
-    let phoneNumber = addressHtmlSplitted.pop();
+    const addressHtml = $('#order_details .content > p').html();
+    const addressHtmlSplitted = addressHtml.split(/<br ?\/?>/g);
+    const phoneNumber = addressHtmlSplitted.pop();
     if (/[0-9 ()+-]{10,16}/.test(phoneNumber)) {
         // Test if it really is a phone number.
         details.phoneNumber = phoneNumber;
     }
 
     // Parse products.
-    let products = [];
-    let productRows = $('table.products tbody tr');
+    const products = [];
+    const productRows = $('table.products tbody tr');
     productRows.each((index, item) => {
             const $row = $(item);
             const rowText = trimExcessiveWhitespace($row.text());
@@ -283,58 +286,61 @@ function parseOrderDetailsHtml(html) {
 /**
  * Get details like payment type, name and phone number.
  *
- * todo: Fix details POST calls.
- *
+ * @param {String} url URL to get the details from (HTTP POST)
  * @param {[]} orders List of orders
  * @param {Object} headersPost Headers to send with the post
- * @param {function} allDone Funtion the call when all orders are precessed
- * @return {Promise} Promise which resolves with the enriched orders
+ * @param {function} allDone Function will be called when all given orders are precessed
+ * @param {boolean} verbose If true, log extra info to console
  */
-function updateWithDetails(orders, headersPost, allDone) {
+function updateWithDetails(url, orders, headersPost, allDone, verbose) {
 
     let promises = [];
-    for (let i = 0; i < orders.length; i++) {
 
-        let order = orders[i];
+    orders.forEach(order => {
 
         // Mutable variable should not be accessible from closure.
         // https://stackoverflow.com/questions/16724620/mutable-variable-is-accessible-from-closure-how-can-i-fix-this
         // Todo: Do not make functions within a loop/
-        (function (tmpOrder) {
-            promises.push(new Promise(function (resolve) {
 
-                // Get details POST request.
+        promises.push(new Promise(resolve => {
 
-                let form = {
-                    id: tmpOrder.id
-                };
-                request.post({url: urlDetails, form: form, headers: headersPost}, function (error, response, html) {
+            // Get details POST request.
+            let form = {
+                id: order.id
+            };
+            request.post({
+                form,
+                url,
+                headers: headersPost
+            }, (error, response, html) => {
 
-                    // Error.
-                    if (error) {
-                        console.error('Accessing url ' + urlDetails + ' to get details failed: ', error);
+                // Error.
+                if (error) {
+                    console.error('Accessing url ' + urlDetails + ' to get details failed: ', error);
 
-                    } else {
-
-                        if (true) {
-                            console.log('details HTML: ', html);
-                        }
-
-                        // Parse HTML and update the order with the details.
-                        let details = parseOrderDetailsHtml(html);
-                        tmpOrder.delivery = details.delivery;
-                        tmpOrder.paid = details.paid;
-                        tmpOrder.name = details.name;
-                        tmpOrder.phoneNumber = details.phoneNumber;
-                    }
-
+                    // We handled the order, that's why we use resolve().
                     resolve();
-                });
-            }));
-        }(order));
-    }
+                    return;
+                }
 
-    Promise.all(promises).then(() => allDone(orders));
+                if (verbose) {
+                    console.log('details HTML: ', html);
+                }
+
+                // Parse HTML and update the order with the details.
+                let details = parseOrderDetailsHtml(html);
+
+                // Merge properties to the order.
+                //https://stackoverflow.com/questions/171251/how-can-i-merge-properties-of-two-javascript-objects-dynamically#171256
+                Object.assign(order, details);
+
+                resolve();
+            });
+        }));
+    });
+
+    Promise.all(promises)
+        .then(() => allDone(orders));
 }
 
 
@@ -395,6 +401,7 @@ let fields = {
 };
 */
 
+exports.getOrders = getOrders;
 // For unit testing purposes.
 exports._ucFirst = ucFirst;
 exports._trimExcessiveWhitespace = trimExcessiveWhitespace;
