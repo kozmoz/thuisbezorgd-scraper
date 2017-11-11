@@ -1,13 +1,46 @@
 #!/usr/bin/env node
 
 const path = require('path');
+
+// https://www.npmjs.com/package/cli
+const cli = require('cli');
+
+// Read version info of thuisbezorgd-scraper.
+const packageJson = require(path.join(__dirname, '..', 'package.json'));
+
 const thuisbezorgdScraper = require(path.join(__dirname, '..', 'src', 'thuisbezorgd-scraper'));
 
-thuisbezorgdScraper.scrape()
+// Display app name and version on --version.
+cli.setApp(packageJson.name, packageJson.version);
+
+const options = cli.parse({
+    username: ['u', 'Thuisbezorgd.nl restaurant username (required)', 'string'],
+    password: ['p', 'Thuisbezorgd.nl restaurant password (required)', 'string'],
+    verbose: ['v', 'Be verbose; show extra logging during execution'],
+    version: [false, 'Returns application name and version'],
+    debug: [false, 'Returns testdata only, no real remote calls are made']
+});
+
+const program = path.basename(process.argv[1]);
+
+// Show version info and exit.
+if (options.version) {
+    cli.info(`${packageJson.name} v${packageJson.version}`);
+    process.exit(0);
+}
+
+// Test if the required username and password are both supplied.
+if (!options.username || !options.password) {
+    // Use cli.error() to get nice red coloring.
+    cli.error(`Username and password both needs to be supplied as argument to ${program}`);
+    cli.error(`See ${program} --help for details`);
+    process.exit(1);
+}
+
+thuisbezorgdScraper.scrape(options)
     .then(orders => console.log(JSON.stringify({orders: orders}, null, 4)))
     .catch(error => {
-        console.error('Error:');
-        console.error(`Failed to load the orders: ${error}`);
-        console.error('');
+        cli.error('Failed to load the orders:');
+        cli.error(error);
         process.exit(1);
     });

@@ -9,14 +9,28 @@ The resulting list of orders is returned in JSON format.
 
 Intended for restaurant owners.
 
+Install
+-------
+You Either install it as local dependency to a project, or install it globally to be able to use it on the command line.
+
+To install <code>thuisbezorgd-scraper</code> locally as a dependency to the project, on the command line type this:
+
+    $ npm install thuisbezorgd-scraper
+    
+To make it a global install type this:    
+
+    $ npm install -g thuisbezorgd-scraper
+    
+Once installed globally, you can run it from any location.    
+
 Usage
 -----
-To list all current orders, execute <code>thuisbezorgd-scraper</code> with respectively the username and password. 
+To list all current orders for example, execute <code>thuisbezorgd-scraper</code> with respectively the username and password. 
 Optionally add the <code>--verbose</code> flag to see extra logging during execution.
 
-    $ thuisbezorgd-scraper <username> <password> [--verbose]
+    $ thuisbezorgd-scraper --username <username> --password <password> [--verbose]
 
-Example output of the command above:
+The output of the command above, should looks like this for example:
 
 	{
 		"orders": [
@@ -73,4 +87,6 @@ Development
 
 Code style 
 ----------
+JavaScript project code style: 
+
 https://github.com/standard/standard

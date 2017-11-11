@@ -8,6 +8,8 @@ const path = require('path');
 const moment = require('moment');
 // Handle request cookies.
 const Cookie = require('request-cookies').Cookie;
+// Nice colored verbose logging.
+const cli = require('cli');
 
 // Fast, flexible & lean implementation of core jQuery designed specifically for the server.
 // https://github.com/cheeriojs/cheerio
@@ -26,7 +28,7 @@ const urlDetails = 'https://orders.takeaway.com/orders/details';
 /**
  * Load all orders and return an JS (JSON) object.
  *
- * @param {Object} configuration Configuration object
+ * @param {Object} configuration Configuration object with the properties 'username', 'password', 'debug' (optional) and 'verbose' (optional)
  * @return {Promise} A promise that resolves with all the orders as JSON object
  */
 function getOrders(configuration) {
@@ -37,8 +39,8 @@ function getOrders(configuration) {
 
     return new Promise((resolveFn, rejectFn) => {
 
-        const thuisbezorgdUsername = configuration.thuisbezorgdUsername;
-        const thuisbezorgdPassword = configuration.thuisbezorgdPassword;
+        const thuisbezorgdUsername = configuration.username;
+        const thuisbezorgdPassword = configuration.password;
 
         if (!thuisbezorgdUsername || !thuisbezorgdPassword || thuisbezorgdUsername === 'test') {
             rejectFn({
@@ -52,28 +54,46 @@ function getOrders(configuration) {
         if (debug) {
             const demoData = [{
                 'id': 'NPPP75771O',
+                'status': 'Confirmed',
                 'orderCode': 'ELMNZX',
-                'time': '17:13',
-                'timeDelivery': '17:45',
-                'amount': '39.45',
+                'time': '2017-11-11T16:13:00.000Z',
+                'timeDelivery': '2017-11-11T16:45:00.000Z',
+                'amount': 3945,
                 'city': 'Nijverdal',
                 'address': '7443ZM, Prins Hendrikstraat 19',
                 'delivery': 'DELIVERY',
                 'paid': 'Paid electronically',
                 'name': 'Janneke',
-                'phoneNumber': '0653830123'
+                'phoneNumber': '0653830123',
+                'distance': '3.2km',
+                'products': [
+                    '1 [Combi boxen] Combibox starter € 13,95',
+                    '1 [Maki] Maki kappa € 2,10 + 4 stuks',
+                    'Delivery costs € 1,50',
+                    '€ 17,55'
+                ]
             }, {
                 'id': 'NPPP757711',
+                'status': 'Delivery',
                 'orderCode': 'ELMNZY',
-                'time': '19:50',
-                'timeDelivery': '20:30',
-                'amount': '10.00',
+                'time': '2017-11-11T18:50:00.000Z',
+                'timeDelivery': '2017-11-11T19:30:00.000Z',
+                'amount': 1000,
                 'city': 'Nijverdal',
                 'address': '7443BT, Grotestraat 222',
                 'delivery': 'PICKUP',
                 'paid': 'Customer pays in cash',
                 'name': 'Piet',
-                'phoneNumber': '0653830124'
+                'phoneNumber': '0653830124',
+                'distance': '0.5km',
+                'products': [
+                    '4 [Poke bowl] Poké bowl Ossenhaas € 35,80',
+                    '2 [Combi boxen] Combibox rolls € 65,00 + 2 persoons',
+                    '2 [Sashimi] Wakame 100 gr € 9,90',
+                    '1 [Uramaki] Uramaki ebi tempura € 11,45 + 8 stuks',
+                    'Delivery costs € 1,50',
+                    '€ 123,65'
+                ]
             }];
 
             setTimeout(() => resolveFn(demoData), 1000 /* Simulate loading time. */);
@@ -105,7 +125,7 @@ function getOrders(configuration) {
         request.get({url: urlMain, headers: headersGet}, (error, response, html) => {
 
             if (verbose) {
-                console.log('First GET cookie response: ' + JSON.stringify(response.headers['set-cookie']));
+                cli.debug('First GET cookie response: ' + JSON.stringify(response.headers['set-cookie']));
             }
 
             // Error.
@@ -134,7 +154,7 @@ function getOrders(configuration) {
             headersPost.Cookie = cookies.join(';');
 
             if (verbose) {
-                console.log('HTML headers of login POST: ', JSON.stringify(headersPost));
+                cli.debug('HTML headers of login POST: ' + JSON.stringify(headersPost));
             }
 
             // Login request
@@ -151,7 +171,7 @@ function getOrders(configuration) {
             }, (error, response) => {
 
                 if (verbose) {
-                    console.log('Login statusCode: ' + response.statusCode);
+                    cli.debug('Login statusCode: ' + response.statusCode);
                 }
 
                 // Error.
@@ -169,7 +189,7 @@ function getOrders(configuration) {
                 }, (error, response, html) => {
 
                     if (verbose) {
-                        console.log('HTML GET: ', html);
+                        cli.debug('HTML GET: ' + html);
                     }
 
                     const $ = cheerio.load(html);
@@ -178,7 +198,7 @@ function getOrders(configuration) {
                     // No orders, resolve with empty array.
                     if (message.indexOf('No orders yet') !== -1) {
                         if (verbose) {
-                            console.log('Found the "No orders yet" label, so we assume there are no orders');
+                            cli.debug('Found the "No orders yet" label, so we assume there are no orders');
                         }
                         resolveFn([]);
                         return;
@@ -193,7 +213,7 @@ function getOrders(configuration) {
             });
         });
     });
-};
+}
 
 
 /**
@@ -316,7 +336,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
 
                 // Error.
                 if (error) {
-                    console.error('Accessing url ' + urlDetails + ' to get details failed: ', error);
+                    cli.error('Accessing url ' + urlDetails + ' to get details failed: ', error);
 
                     // We handled the order, that's why we use resolve().
                     resolve();
@@ -324,7 +344,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
                 }
 
                 if (verbose) {
-                    console.log('details HTML: ', html);
+                    cli.debug('details HTML: ' + html);
                 }
 
                 // Parse HTML and update the order with the details.
@@ -378,31 +398,7 @@ function ucFirst(text) {
 }
 
 
-// Todo: convert times to time object.
-// Todo: Convert amount to amount in cents
-/*
-let fields = {
-    orderCode: order.orderCode,
-    id: order.id,
-    time: todayDate + ' ' + order.time + ':00',
-    timeDelivery: todayDate + ' ' + order.timeDelivery + ':00',
-    amount: order.amount.replace('.', ''),
-    city: order.city,
-    address: order.address,
-    locationLatitude: order.locationLatitude,
-    locationLongitude: order.locationLongitude,
-    delivery: order.delivery,
-
-    // Paid electronically
-    // Customer pays with ? 30,00
-    // Customer pays in cash, exact
-    // Customer pays with ? 23,40
-    paid: order.paid,
-    name: order.name,
-    phoneNumber: order.phoneNumber
-};
-*/
-
+// Public functions.
 exports.getOrders = getOrders;
 // For unit testing purposes.
 exports._ucFirst = ucFirst;
