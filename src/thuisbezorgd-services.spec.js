@@ -2,6 +2,7 @@ describe("thuisbezorgd-services", function () {
 
     const fs = require('fs');
     const path = require('path');
+    const moment = require('moment');
     const service = require('./thuisbezorgd-services');
 
 
@@ -69,16 +70,19 @@ describe("thuisbezorgd-services", function () {
 
     it("should be able to parse the list of orders (all confirmed)", function () {
 
-        let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-confirmed.html'), 'utf-8');
-        let orders = service._parseOrderListHtml(html);
+        const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-confirmed.html'), 'utf-8');
+        const orders = service._parseOrderListHtml(html);
+
+        const momentTime = moment(moment({hour: 17, minute: 15}),'HH:mm').toISOString();
+        const momentTimeDelivery = moment(moment({hour: 17, minute: 50}),'HH:mm').toISOString();
 
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OQ35ORNQOO');
         expect(orders[0].orderCode).toBe('AXEDON');
         expect(orders[0].status).toBe('Confirmed');
-        expect(orders[0].time).toBe('17:15');
-        expect(orders[0].timeDelivery).toBe('17:50');
-        expect(orders[0].amount).toBe('15.45');
+        expect(orders[0].time).toBe(momentTime);
+        expect(orders[0].timeDelivery).toBe(momentTimeDelivery);
+        expect(orders[0].amount).toBe(1545);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7443BS, Grotestraat 222');
 
@@ -89,16 +93,19 @@ describe("thuisbezorgd-services", function () {
 
     it("should be able to parse the list of orders (confirmed and delivery)", function () {
 
-        let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-delivery.html'), 'utf-8');
-        let orders = service._parseOrderListHtml(html);
+        const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-delivery.html'), 'utf-8');
+        const orders = service._parseOrderListHtml(html);
+
+        const momentTime = moment(moment({hour: 18, minute: 18}),'HH:mm').toISOString();
+        const momentTimeDelivery = moment(moment({hour: 18, minute: 50}),'HH:mm').toISOString();
 
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OO0PN0OQOO');
         expect(orders[0].orderCode).toBe('DFICYI');
         expect(orders[0].status).toBe('Confirmed');
-        expect(orders[0].time).toBe('18:18');
-        expect(orders[0].timeDelivery).toBe('18:50');
-        expect(orders[0].amount).toBe('29.65');
+        expect(orders[0].time).toBe(momentTime);
+        expect(orders[0].timeDelivery).toBe(momentTimeDelivery);
+        expect(orders[0].amount).toBe(2965);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7442AD, Croeselaan 2');
 
@@ -112,13 +119,16 @@ describe("thuisbezorgd-services", function () {
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-kitchen.html'), 'utf-8');
         let orders = service._parseOrderListHtml(html);
 
+        const momentTime = moment(moment({hour: 18, minute: 34}),'HH:mm').toISOString();
+        const momentTimeDelivery = moment(moment({hour: 19, minute: 20}),'HH:mm').toISOString();
+
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OQP013OQOO');
         expect(orders[0].orderCode).toBe('ZL41AT');
         expect(orders[0].status).toBe('Kitchen');
-        expect(orders[0].time).toBe('18:34');
-        expect(orders[0].timeDelivery).toBe('19:20');
-        expect(orders[0].amount).toBe('47.95');
+        expect(orders[0].time).toBe(momentTime);
+        expect(orders[0].timeDelivery).toBe(momentTimeDelivery);
+        expect(orders[0].amount).toBe(4795);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7443PX, Croeselaan 5');
         expect(orders[0].distance).toBe('2.4km');
