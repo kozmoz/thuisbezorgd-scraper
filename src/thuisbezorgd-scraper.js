@@ -12,6 +12,6 @@ exports.scrape = scrape;
  * @return {Promise} A promise that resolves with all the orders as JSON object
  */
 function scrape(configuration) {
-    return thuisbezorgdService.getOrders(configuration)
+    return thuisbezorgdService.getOrders(configuration);
 }
 

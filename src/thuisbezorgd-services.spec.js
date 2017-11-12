@@ -1,4 +1,4 @@
-describe("thuisbezorgd-services", function () {
+describe('thuisbezorgd-services', function () {
 
     const fs = require('fs');
     const path = require('path');
@@ -10,13 +10,13 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should trim excessive whitespace within the text", function () {
+    it('should trim excessive whitespace within the text', function () {
         let text = service._trimExcessiveWhitespace('  test  123 876\n');
         expect(text).toBe('test 123 876');
     });
 
 
-    it("should be able to parse the details of an order (1)", function () {
+    it('should be able to parse the details of an order (1)', function () {
 
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'details1.html'), 'utf-8');
         let details = service._parseOrderDetailsHtml(html);
@@ -32,7 +32,7 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should be able to parse the details of an order (2)", function () {
+    it('should be able to parse the details of an order (2)', function () {
 
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'details2.html'), 'utf-8');
         let details = service._parseOrderDetailsHtml(html);
@@ -51,7 +51,7 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should be able to parse the details of an order (3)", function () {
+    it('should be able to parse the details of an order (3)', function () {
 
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'details3.html'), 'utf-8');
         let details = service._parseOrderDetailsHtml(html);
@@ -68,7 +68,7 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should be able to parse the list of orders (all confirmed)", function () {
+    it('should be able to parse the list of orders (all confirmed)', function () {
 
         const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-confirmed.html'), 'utf-8');
         const orders = service._parseOrderListHtml(html);
@@ -91,7 +91,7 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should be able to parse the list of orders (confirmed and delivery)", function () {
+    it('should be able to parse the list of orders (confirmed and delivery)', function () {
 
         const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-delivery.html'), 'utf-8');
         const orders = service._parseOrderListHtml(html);
@@ -114,7 +114,7 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should be able to parse the list of orders (confirmed and kitchen)", function () {
+    it('should be able to parse the list of orders (confirmed and kitchen)', function () {
 
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-kitchen.html'), 'utf-8');
         let orders = service._parseOrderListHtml(html);
@@ -140,13 +140,13 @@ describe("thuisbezorgd-services", function () {
     });
 
 
-    it("should get the status from the given list of class names", function () {
+    it('should get the status from the given list of class names', function () {
         let className = service._getStatusFromClassName('order-link narrow status-confirmed');
         expect(className).toBe('Confirmed');
     });
 
 
-    it("should convert the first character of a text to upper case", function () {
+    it('should convert the first character of a text to upper case', function () {
         let className = service._ucFirst('confirmed');
         expect(className).toBe('Confirmed');
     });
