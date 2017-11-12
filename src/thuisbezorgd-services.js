@@ -8,8 +8,6 @@ const path = require('path');
 const moment = require('moment');
 // Handle request cookies.
 const Cookie = require('request-cookies').Cookie;
-// Nice colored verbose logging.
-const cli = require('cli');
 
 // Fast, flexible & lean implementation of core jQuery designed specifically for the server.
 // https://github.com/cheeriojs/cheerio
@@ -24,6 +22,8 @@ const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${package
 const urlMain = 'https://orders.takeaway.com/';
 const urlOrders = 'https://orders.takeaway.com/orders/orders';
 const urlDetails = 'https://orders.takeaway.com/orders/details';
+
+const debugPrefx = '\x1B[36mDEBUG\x1B[0m: ';
 
 /**
  * Load all orders and return an JS (JSON) object.
@@ -125,7 +125,7 @@ function getOrders(configuration) {
         request.get({url: urlMain, headers: headersGet}, (error, response, html) => {
 
             if (verbose) {
-                cli.debug('First GET cookie response: ' + JSON.stringify(response.headers['set-cookie']));
+                console.log(`${debugPrefx}First GET cookie response: ` + JSON.stringify(response.headers['set-cookie']));
             }
 
             // Error.
@@ -154,7 +154,7 @@ function getOrders(configuration) {
             headersPost.Cookie = cookies.join(';');
 
             if (verbose) {
-                cli.debug('HTML headers of login POST: ' + JSON.stringify(headersPost));
+                console.log(`${debugPrefx}HTML headers of login POST: ` + JSON.stringify(headersPost));
             }
 
             // Login request
@@ -171,8 +171,8 @@ function getOrders(configuration) {
             }, (error, response, html) => {
 
                 if (verbose) {
-                    cli.debug('Login statusCode: ' + response.statusCode);
-                    cli.debug('Login response html: ' + html);
+                    console.log(`${debugPrefx}Login statusCode: ${response.statusCode}`);
+                    console.log(`${debugPrefx}Login response html: ${html}`);
                 }
 
                 // Error.
@@ -199,7 +199,7 @@ function getOrders(configuration) {
                 }, (error, response, html) => {
 
                     if (verbose) {
-                        cli.debug('HTML GET: ' + html);
+                        console.log(`${debugPrefx}HTML GET: ${html}`);
                     }
 
                     const $ = cheerio.load(html);
@@ -208,7 +208,7 @@ function getOrders(configuration) {
                     // No orders, resolve with empty array.
                     if (message.indexOf('No orders yet') !== -1) {
                         if (verbose) {
-                            cli.debug('Found the "No orders yet" label, so we assume there are no orders');
+                            console.log(`${debugPrefx}Found the "No orders yet" label, so we assume there are no orders`);
                         }
                         resolveFn([]);
                         return;
@@ -283,16 +283,18 @@ function parseOrderDetailsHtml(html) {
     const $ = cheerio.load(html);
 
     // DELIVERY
-    details.delivery = $('#order_details .summary .order-info-heading td').text();
+    const $orderDetails = $('#order_details');
+
+    details.delivery = $orderDetails.find('.summary .order-info-heading td').text();
 
     // Paid electronically / Customer pays in cash, exact
-    details.paid = $('#order_details .content p:nth-child(2)').text();
+    details.paid = $orderDetails.find('.content p:nth-child(2)').text();
 
     // Get text of first textNode. (and also get the HTML encoded characters right).
-    details.name = $('#order_details .content > p').contents().eq(0).text();
+    details.name = $orderDetails.find('.content > p').contents().eq(0).text();
 
     // Phone number is the last line of the name, address text.
-    const addressHtml = $('#order_details .content > p').html();
+    const addressHtml = $orderDetails.find('.content > p').html();
     const addressHtmlSplitted = addressHtml.split(/<br ?\/?>/g);
     const phoneNumber = addressHtmlSplitted.pop();
     if (/[0-9 ()+-]{10,16}/.test(phoneNumber)) {
@@ -346,7 +348,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
 
                 // Error.
                 if (error) {
-                    cli.error('Accessing url ' + urlDetails + ' to get details failed: ', error);
+                    console.log(`${debugPrefx}Accessing url ${urlDetails} to get details failed: ${error}`);
 
                     // We handled the order, that's why we use resolve().
                     resolve();
@@ -354,7 +356,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
                 }
 
                 if (verbose) {
-                    cli.debug('details HTML: ' + html);
+                    console.log(`${debugPrefx}Details HTML: ${html}`);
                 }
 
                 // Parse HTML and update the order with the details.
