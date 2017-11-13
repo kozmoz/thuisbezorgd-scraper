@@ -9,18 +9,18 @@ The resulting list of orders is returned in JSON format.
 
 Intended for restaurant owners.
 
+Developed in collaboration with a Sushi 81. 
+Delivery and take-away restaurant of sushi and Poke Bowls. Located in Nijverdal, the Netherlands. 
+https://sushi81.nl   
+
 Install
 -------
 You either install it as local dependency to a project, or install it globally to be able to use it on the command line.
 
-To install <code>thuisbezorgd-scraper</code> locally as a dependency to the project, on the command line type this:
-
-    $ npm install thuisbezorgd-scraper
-    
-To make it a global install type this:    
+To install <code>thuisbezorgd-scraper</code> globally, on the command line type this:
 
     $ npm install -g thuisbezorgd-scraper
-    
+        
 Once installed globally, you can run it from any location.    
 
 Usage Command Line
@@ -84,8 +84,18 @@ For example, the output of the command above could look like this:
 
 Usage in Code
 -------------
-Require <code>thuisbezorgd-scraper</code> in your program and call <code>scrape()</code> 
-with the username and password supplied within a configuration object:  
+We assume npm is installed and the project already contains a package.json file. 
+If not, then first initialize the project.
+
+    $ npm init
+      
+Install <code>thuisbezorgd-scraper</code> as node module and save it to package.json:
+
+    $ npm install thuisbezorgd-scraper --save
+
+Add <code>thuisbezorgd-scraper</code> to your program with <code>require</code> 
+and call <code>scrape()</code> with the username and password encapsulated within a 
+configuration object:  
 
     const thuisbezorgdScraper = require('thuisbezorgd-scraper');
     const options = {
