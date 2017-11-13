@@ -31,7 +31,7 @@ flag to see extra logging during execution.
 
     $ thuisbezorgd-scraper --username <username> --password <password> [--verbose]
 
-The output of the command above, should looks like this for example:
+For example, the output of the command above could look like this:
 
 	{
 		"orders": [
