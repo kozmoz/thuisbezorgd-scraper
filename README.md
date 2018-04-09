@@ -9,19 +9,21 @@ The resulting list of orders is returned in JSON format.
 
 Intended for restaurant owners.
 
-Developed in collaboration with a Sushi 81. 
-Delivery and take-away restaurant of sushi and Poke Bowls. Located in Nijverdal, the Netherlands. 
+Developed in collaboration with Sushi 81. Delivery and take-away restaurant of sushi and Poke Bowls. Located in Nijverdal, the Netherlands. 
 https://sushi81.nl   
 
 Install
 -------
-You either install it as local dependency to a project, or install it globally to be able to use it on the command line.
+You can either install it as local dependency to a project, or install it globally to be able to use it on the command line.
 
-To install <code>thuisbezorgd-scraper</code> globally, on the command line type this:
+To install <code>thuisbezorgd-scraper</code> globally, on the command line type the following:
 
     $ npm install -g thuisbezorgd-scraper
         
-Once installed globally, you can run it from any location.    
+Once installed globally, you can run it from any location:
+
+    $ thuisbezorgd-scraper --help
+        
 
 Usage Command Line
 ------------------
@@ -84,7 +86,7 @@ For example, the output of the command above could look like this:
 
 Usage in Code
 -------------
-We assume npm is installed and the project already contains a package.json file. 
+We assume that npm is installed and that the project already contains a package.json file. 
 If not, then first initialize the project.
 
     $ npm init

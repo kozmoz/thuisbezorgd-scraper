@@ -15,7 +15,7 @@ const cheerio = require('cheerio');
 // Read version info of thuisbezorgd-scraper.
 const packageJson = require(path.join(__dirname, '..', 'package.json'));
 
-
+// User agent is based on package name and version and includes the email address.
 const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
 
 // Thuisbezorgd.nl URLs.
@@ -23,7 +23,7 @@ const urlMain = 'https://orders.takeaway.com/';
 const urlOrders = 'https://orders.takeaway.com/orders/orders';
 const urlDetails = 'https://orders.takeaway.com/orders/details';
 
-const debugPrefx = '\x1B[36mDEBUG\x1B[0m: ';
+const debugPrefix = '\x1B[36mDEBUG\x1B[0m: ';
 
 /**
  * Load all orders and return an JS (JSON) object.
@@ -117,7 +117,7 @@ function getOrders(configuration) {
             'Referer': 'https://orders.takeaway.com/'
         };
 
-        // Add POST headers with GET headers.
+        // Add GET headers to POST headers object.
         Object.assign(headersPost, headersGet);
 
 
@@ -125,7 +125,7 @@ function getOrders(configuration) {
         request.get({url: urlMain, headers: headersGet}, (error, response, html) => {
 
             if (verbose) {
-                console.log(`${debugPrefx}First GET cookie response: ` + JSON.stringify(response.headers['set-cookie']));
+                console.log(`${debugPrefix}First GET cookie response: ` + JSON.stringify(response.headers['set-cookie']));
             }
 
             // Error.
@@ -154,7 +154,7 @@ function getOrders(configuration) {
             headersPost.Cookie = cookies.join(';');
 
             if (verbose) {
-                console.log(`${debugPrefx}HTML headers of login POST: ` + JSON.stringify(headersPost));
+                console.log(`${debugPrefix}HTML headers of login POST: ` + JSON.stringify(headersPost));
             }
 
             // Login request
@@ -171,8 +171,8 @@ function getOrders(configuration) {
             }, (error, response, html) => {
 
                 if (verbose) {
-                    console.log(`${debugPrefx}Login statusCode: ${response.statusCode}`);
-                    console.log(`${debugPrefx}Login response html: ${html}`);
+                    console.log(`${debugPrefix}Login statusCode: ${response.statusCode}`);
+                    console.log(`${debugPrefix}Login response html: ${html}`);
                 }
 
                 // Error.
@@ -199,7 +199,7 @@ function getOrders(configuration) {
                 }, (error, response, html) => {
 
                     if (verbose) {
-                        console.log(`${debugPrefx}HTML GET: ${html}`);
+                        console.log(`${debugPrefix}HTML GET: ${html}`);
                     }
 
                     const $ = cheerio.load(html);
@@ -208,7 +208,7 @@ function getOrders(configuration) {
                     // No orders, resolve with empty array.
                     if (message.indexOf('No orders yet') !== -1) {
                         if (verbose) {
-                            console.log(`${debugPrefx}Found the "No orders yet" label, so we assume there are no orders`);
+                            console.log(`${debugPrefix}Found the "No orders yet" label, so we assume there are no orders`);
                         }
                         resolveFn([]);
                         return;
@@ -348,7 +348,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
 
                 // Error.
                 if (error) {
-                    console.log(`${debugPrefx}Accessing url ${urlDetails} to get details failed: ${error}`);
+                    console.log(`${debugPrefix}Accessing url ${urlDetails} to get details failed: ${error}`);
 
                     // We handled the order, that's why we use resolve().
                     resolve();
@@ -356,7 +356,7 @@ function updateWithDetails(url, orders, headersPost, allDone, verbose) {
                 }
 
                 if (verbose) {
-                    console.log(`${debugPrefx}Details HTML: ${html}`);
+                    console.log(`${debugPrefix}Details HTML: ${html}`);
                 }
 
                 // Parse HTML and update the order with the details.
