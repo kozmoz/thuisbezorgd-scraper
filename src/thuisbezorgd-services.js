@@ -294,11 +294,12 @@ function parseOrderDetailsHtml(html) {
     details.name = $orderDetails.find('.content > p').contents().eq(0).text();
 
     // Phone number is the last line of the name, address text.
-    const addressHtml = $orderDetails.find('.content > p').html();
+    // (.html() can return undefined, in that case default to empty string).
+    const addressHtml = $orderDetails.find('.content > p').html() || '';
     const addressHtmlSplitted = addressHtml.split(/<br ?\/?>/g);
     const phoneNumber = addressHtmlSplitted.pop();
-    if (/[0-9 ()+-]{10,16}/.test(phoneNumber)) {
-        // Test if it really is a phone number.
+    if (phoneNumber && /[0-9 ()+-]{10,16}/.test(phoneNumber)) {
+        // Test if it really looks like a phone number.
         details.phoneNumber = phoneNumber;
     }
 
