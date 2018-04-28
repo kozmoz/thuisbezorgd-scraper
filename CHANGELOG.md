@@ -1,6 +1,6 @@
 # Changes to thuisbezorgd-scraper
 
-### Todo 
+### 1.1.4 (April 28, 2018) 
 - Bugfix: Phone number appears to be optional, test if it's available before extracting from HTML
 
 ### 1.1.3 (November 12, 2017) 
