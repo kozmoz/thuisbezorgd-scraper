@@ -1,5 +1,8 @@
 # Changes to thuisbezorgd-scraper
 
+### Todo 
+- Bugfix: Phone number appears to be optional, test if it's available before extracting from HTML
+
 ### 1.1.3 (November 12, 2017) 
 - Updated moment.js library to 2.19.2
 - Use console.log() for debug logging instead of cli.debug()
