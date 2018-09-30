@@ -123,3 +123,7 @@ Code style
 JavaScript project code style: 
 
 https://github.com/standard/standard
+
+Request npm package
+-------------------
+https://github.com/request/request#readme

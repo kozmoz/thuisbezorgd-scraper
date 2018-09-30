@@ -6,16 +6,18 @@ const request = require('request');
 const path = require('path');
 // Date manipulation library.
 const moment = require('moment');
-// Handle request cookies.
-const Cookie = require('request-cookies').Cookie;
 
 // Fast, flexible & lean implementation of core jQuery designed specifically for the server.
 // https://github.com/cheeriojs/cheerio
+/** @var {{load:Function}} cheerio */
 const cheerio = require('cheerio');
 // Read version info of thuisbezorgd-scraper.
 const packageJson = require(path.join(__dirname, '..', 'package.json'));
 
 // User agent is based on package name and version and includes the email address.
+/** @namespace packageJson.name */
+/** @namespace packageJson.version */
+/** @namespace packageJson.email */
 const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
 
 // Thuisbezorgd.nl URLs.
@@ -28,7 +30,8 @@ const debugPrefix = '\x1B[36mDEBUG\x1B[0m: ';
 /**
  * Load all orders and return an JS (JSON) object.
  *
- * @param {Object} configuration Configuration object with the properties 'username', 'password', 'debug' (optional) and 'verbose' (optional)
+ * @param {Object} configuration Configuration object with the properties 'username', 'password', 'debug' (optional)
+ *     and 'verbose' (optional)
  * @return {Promise} A promise that resolves with all the orders as JSON object
  */
 function getOrders(configuration) {
@@ -120,9 +123,12 @@ function getOrders(configuration) {
         // Add GET headers to POST headers object.
         Object.assign(headersPost, headersGet);
 
+        // We enable cookies by default, so they're also used in subsequent requests.
+        // https://github.com/request/request#readme
+        const requestInstance = request.defaults({jar: true});
 
         // First GET to get the session cookie and secret request key.
-        request.get({url: urlMain, headers: headersGet}, (error, response, html) => {
+        requestInstance.get({url: urlMain, headers: headersGet}, (error, response, html) => {
 
             if (verbose) {
                 console.log(`${debugPrefix}First GET cookie response: ` + JSON.stringify(response.headers['set-cookie']));
@@ -143,22 +149,12 @@ function getOrders(configuration) {
             const $ = cheerio.load(html);
             const key = $('input[name="key"]').val();
 
-            // Get the session cookie.
-            const rawCookies = response.headers['set-cookie'];
-            const cookies = rawCookies.map(cookie => {
-                const cookieObj = new Cookie(cookie);
-                return `${cookieObj.key}=${cookieObj.value}`;
-            });
-
-            // Update HTTP headers with sessions cookie.
-            headersPost.Cookie = cookies.join(';');
-
             if (verbose) {
                 console.log(`${debugPrefix}HTML headers of login POST: ` + JSON.stringify(headersPost));
             }
 
             // Login request
-            request.post({
+            requestInstance.post({
                 url: urlMain,
                 headers: headersPost,
                 form: {
@@ -193,7 +189,7 @@ function getOrders(configuration) {
                 // The log-in was probably successful.
 
                 // Start new request to get all orders.
-                request.get({
+                requestInstance.get({
                     url: urlOrders,
                     headers: headersPost
                 }, (error, response, html) => {
@@ -218,7 +214,7 @@ function getOrders(configuration) {
                     const orders = parseOrderListHtml(html);
 
                     // Always resolves
-                    updateWithDetails(urlDetails, orders, headersPost, resolveFn, verbose);
+                    updateWithDetails(requestInstance, urlDetails, orders, headersPost, resolveFn, verbose);
                 });
             });
         });
@@ -231,7 +227,8 @@ function getOrders(configuration) {
  * An order contains an id, status, time, delivery time, order code, city, amount, address, distance, etc.
  *
  * @param {String} html Raw HTML of orders page
- * @return {[]} Array with objects which contain properties for id, orderCode, status, time, timeDelivery, amount, city, address, distance
+ * @return {[]} Array with objects which contain properties for id, orderCode, status, time, timeDelivery, amount,
+ *     city, address, distance
  */
 function parseOrderListHtml(html) {
 
@@ -272,7 +269,8 @@ function parseOrderListHtml(html) {
 
 
 /**
- * Parse the given HTML and get the details of an order, like the type of delivery, way of payment, the name, phone number, products etc.
+ * Parse the given HTML and get the details of an order, like the type of delivery, way of payment, the name, phone
+ * number, products etc.
  *
  * @param {String} html Raw HTML of details page
  * @return {Object} Object with properties for details; delivery, paid, name, phoneNumber and products
@@ -326,13 +324,14 @@ function parseOrderDetailsHtml(html) {
 /**
  * Get details like payment type, name and phone number.
  *
+ * @param {Object} request which has cookies enabled
  * @param {String} url URL to get the details from (HTTP POST)
  * @param {[]} orders List of orders
  * @param {Object} headersPost Headers to send with the post
  * @param {function} allDone Function will be called when all given orders are precessed
  * @param {boolean} verbose If true, log extra info to console
  */
-function updateWithDetails(url, orders, headersPost, allDone, verbose) {
+function updateWithDetails(request, url, orders, headersPost, allDone, verbose) {
 
     const promises = [];
     orders.forEach(order => {
