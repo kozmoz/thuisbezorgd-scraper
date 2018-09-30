@@ -1,5 +1,10 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.1.5 (September 30, 2018) 
+- Removed dependency on "request-cookies" package.
+  Session cookies are now handled by the "request" package itself.
+  This fixes issue #1 (critical vulnerability in request-cookies npm package).
+
 ### 1.1.4 (April 28, 2018) 
 - Bugfix: Phone number appears to be optional, test if it's available before extracting from HTML
 
