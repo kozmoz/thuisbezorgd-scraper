@@ -41,8 +41,8 @@ For example, the output of the command above could look like this:
 				"id": "O3NQN1105O",
 				"orderCode": "E0NQVH",
 				"status": "Confirmed",
-				"time": "2017-11-11T18:55:00.000Z",
-				"timeDelivery": "2017-11-11T19:55:00.000Z",
+				"time": "2017-11-11T18:55:00",
+				"timeDelivery": "2017-11-11T19:55:00",
 				"amount": 1755,
 				"city": "Nijverdal",
 				"address": "7443LC, Dille 99",
@@ -62,8 +62,8 @@ For example, the output of the command above could look like this:
 				"id": "ON3NRNPROO",
 				"orderCode": "1T4UPU",
 				"status": "Delivery",
-				"time": "2017-11-11T14:16:00.000Z",
-				"timeDelivery": "2017-11-11T15:45:00.000Z",
+				"time": "2017-11-11T14:16:00",
+				"timeDelivery": "2017-11-11T15:45:00",
 				"amount": 12365,
 				"city": "Nijverdal",
 				"address": "7443BT, Grotestraat 222",
@@ -118,6 +118,18 @@ configuration object:
 Development
 ===========
 
+Unit tests
+----------
+To start the unit tests:
+
+    $ npm run test
+    
+Debugging
+---------
+To show example output, start it with the <code>--debug</code> flag.
+
+    $ thuisbezorgd-scraper --debug     
+      
 Code style 
 ----------
 JavaScript project code style: 

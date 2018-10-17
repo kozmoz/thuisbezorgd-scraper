@@ -30,7 +30,7 @@ if (options.version) {
 }
 
 // Test if the required username and password are both supplied.
-if (!options.username || !options.password) {
+if (!options.debug && (!options.username || !options.password)) {
     // Use cli.error() to get nice red coloring.
     cli.error(`Username and password both needs to be supplied as argument to ${program}`);
     cli.error(`See ${program} --help for details`);
@@ -41,6 +41,6 @@ thuisbezorgdScraper.scrape(options)
     .then(orders => console.log(JSON.stringify({orders: orders}, null, 4)))
     .catch(error => {
         cli.error('Failed to load the orders:');
-        cli.error(error);
+        cli.error(JSON.stringify(error));
         process.exit(1);
     });

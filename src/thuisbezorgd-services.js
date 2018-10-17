@@ -45,7 +45,7 @@ function getOrders(configuration) {
         const thuisbezorgdUsername = configuration.username;
         const thuisbezorgdPassword = configuration.password;
 
-        if (!thuisbezorgdUsername || !thuisbezorgdPassword || thuisbezorgdUsername === 'test') {
+        if (!debug && (!thuisbezorgdUsername || !thuisbezorgdPassword)) {
             rejectFn({
                 errorCode: 'NO_CREDENTIALS',
                 errorMessage: 'No username and or password configured, cannot log in to Thuisbezorgd.nl'
@@ -59,8 +59,8 @@ function getOrders(configuration) {
                 'id': 'NPPP75771O',
                 'status': 'Confirmed',
                 'orderCode': 'ELMNZX',
-                'time': '2017-11-11T16:13:00.000Z',
-                'timeDelivery': '2017-11-11T16:45:00.000Z',
+                'time': '2017-11-11T16:13:00',
+                'timeDelivery': '2017-11-11T16:45:00',
                 'amount': 3945,
                 'city': 'Nijverdal',
                 'address': '7443ZM, Prins Hendrikstraat 19',
@@ -79,8 +79,8 @@ function getOrders(configuration) {
                 'id': 'NPPP757711',
                 'status': 'Delivery',
                 'orderCode': 'ELMNZY',
-                'time': '2017-11-11T18:50:00.000Z',
-                'timeDelivery': '2017-11-11T19:30:00.000Z',
+                'time': '2017-11-11T18:50:00',
+                'timeDelivery': '2017-11-11T19:30:00',
                 'amount': 1000,
                 'city': 'Nijverdal',
                 'address': '7443BT, Grotestraat 222',
@@ -239,15 +239,20 @@ function parseOrderListHtml(html) {
         const $tbodyItem = $(tbodyItem);
         const id = ($tbodyItem.attr('rel') || '').replace('#o', '').trim();
         const status = getStatusFromClassName($tbodyItem.attr('class'));
-        // Formats a string to the ISO8601 standard.
-        // It always returns a timestamp in UTC!
-        //https://momentjs.com/docs/#/displaying/as-iso-string/
-        const time = moment($('td.time', tbodyItem).text().trim(), 'HH:mm').toISOString();
-        const timeDelivery = moment($('td.time-delivery', tbodyItem).text().trim() || time, 'HH:mm').toISOString();
+        // Formats a string to the ISO8601 standard without timezone info.
+        // It always returns a timestamp in local time!
+        let timeDelivery;
+        const deliveryTimeAsString = $('td.time-delivery', tbodyItem).text().trim();
+        const orderTimeAsMoment = moment($('td.time', tbodyItem).text().trim(), 'HH:mm');
+        if (deliveryTimeAsString) {
+            const deliveryDateAsMoment = moment(deliveryTimeAsString, 'HH:mm');
+            timeDelivery = deliveryDateAsMoment.format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS);
+        }
+        const timeOrder = orderTimeAsMoment.format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS);
         const orderCode = $('td.order-code', tbodyItem).text().trim();
         const city = $('td.city', tbodyItem).text().trim();
         // Amount in cents
-        const amount = Number.parseInt($('td.amount', tbodyItem).text().substr(1).replace(/[,.\s]+/g, ''), 10);
+        const amount = Number.parseInt($('td.amount', tbodyItem).text().replace(/[^0-9]+/g, ''));
         const address = $('td[colspan=2]', tbodyItem).text().trim();
         const distance = $('td.distance', tbodyItem).text().replace(',', '.').replace(/\s+/, '');
 
@@ -255,7 +260,9 @@ function parseOrderListHtml(html) {
             id,
             orderCode,
             status,
-            time,
+            // Better to name it orderTime but for now keep it the old name to stay backwards compatible.
+            time: timeOrder,
+            // Can be undefined, field is not required.
             timeDelivery,
             amount,
             city,

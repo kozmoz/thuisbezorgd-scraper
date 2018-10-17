@@ -67,21 +67,39 @@ describe('thuisbezorgd-services', function () {
         expect(details.products[3]).toBe('€ 47,95');
     });
 
+    it('should be able to parse the list of orders (one new)', function () {
+
+        const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-new.html'), 'utf-8');
+        const orders = service._parseOrderListHtml(html);
+
+        // Order only contains time, so we assume today as date hence we have to use momentjs to determine the date.
+        const todayDate = moment(moment(), 'HH:mm').format('YYYY-MM-DD');
+
+        expect(orders.length).toBe(1);
+        expect(orders[0].id).toBe('OQ35ORNQOO');
+        expect(orders[0].orderCode).toBe('AXEDON');
+        expect(orders[0].status).toBe('New');
+        expect(orders[0].time).toBe(todayDate + 'T17:15:00');
+        expect(orders[0].timeDelivery).toBe(undefined);
+        expect(orders[0].amount).toBe(1545);
+        expect(orders[0].city).toBe('Nijverdal');
+        expect(orders[0].address).toBe('7443BS, Grotestraat 222');
+    });
 
     it('should be able to parse the list of orders (all confirmed)', function () {
 
         const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-confirmed.html'), 'utf-8');
         const orders = service._parseOrderListHtml(html);
 
-        const momentTime = moment(moment({hour: 17, minute: 15}),'HH:mm').toISOString();
-        const momentTimeDelivery = moment(moment({hour: 17, minute: 50}),'HH:mm').toISOString();
+        // Order only contains time, so we assume today as date hence we have to use momentjs to determine the date.
+        const todayDate = moment(moment(), 'HH:mm').format('YYYY-MM-DD');
 
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OQ35ORNQOO');
         expect(orders[0].orderCode).toBe('AXEDON');
         expect(orders[0].status).toBe('Confirmed');
-        expect(orders[0].time).toBe(momentTime);
-        expect(orders[0].timeDelivery).toBe(momentTimeDelivery);
+        expect(orders[0].time).toBe(todayDate + 'T17:15:00');
+        expect(orders[0].timeDelivery).toBe(todayDate + 'T17:50:00');
         expect(orders[0].amount).toBe(1545);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7443BS, Grotestraat 222');
@@ -96,15 +114,15 @@ describe('thuisbezorgd-services', function () {
         const html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-delivery.html'), 'utf-8');
         const orders = service._parseOrderListHtml(html);
 
-        const momentTime = moment(moment({hour: 18, minute: 18}),'HH:mm').toISOString();
-        const momentTimeDelivery = moment(moment({hour: 18, minute: 50}),'HH:mm').toISOString();
+        // Order only contains time, so we assume today as date hence we have to use momentjs to determine the date.
+        const todayDate = moment(moment(), 'HH:mm').format('YYYY-MM-DD');
 
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OO0PN0OQOO');
         expect(orders[0].orderCode).toBe('DFICYI');
         expect(orders[0].status).toBe('Confirmed');
-        expect(orders[0].time).toBe(momentTime);
-        expect(orders[0].timeDelivery).toBe(momentTimeDelivery);
+        expect(orders[0].time).toBe(todayDate + 'T18:18:00');
+        expect(orders[0].timeDelivery).toBe(todayDate + 'T18:50:00');
         expect(orders[0].amount).toBe(2965);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7442AD, Croeselaan 2');
@@ -119,15 +137,15 @@ describe('thuisbezorgd-services', function () {
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'orders-kitchen.html'), 'utf-8');
         let orders = service._parseOrderListHtml(html);
 
-        const momentTime = moment(moment({hour: 18, minute: 34}),'HH:mm').toISOString();
-        const momentTimeDelivery = moment(moment({hour: 19, minute: 20}),'HH:mm').toISOString();
+        // Order only contains time, so we assume today as date hence we have to use momentjs to determine the date.
+        const todayDate = moment(moment(), 'HH:mm').format('YYYY-MM-DD');
 
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OQP013OQOO');
         expect(orders[0].orderCode).toBe('ZL41AT');
         expect(orders[0].status).toBe('Kitchen');
-        expect(orders[0].time).toBe(momentTime);
-        expect(orders[0].timeDelivery).toBe(momentTimeDelivery);
+        expect(orders[0].time).toBe(todayDate + 'T18:34:00');
+        expect(orders[0].timeDelivery).toBe(todayDate + 'T19:20:00');
         expect(orders[0].amount).toBe(4795);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7443PX, Croeselaan 5');

@@ -1,5 +1,11 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.1.6 (October 17, 2018)
+- Bugfix: In case of error, it shows [Object Object] on the command line, instead of the error message
+- Improvement: The dates should be in local time, don't show it as UTC time
+- Improvement: timeDelivery can be empty, in that case it is undefined
+- Improvement: In case of debug, the username and password shouldn't be required   
+
 ### 1.1.5 (September 30, 2018) 
 - Removed dependency on "request-cookies" package.
   Session cookies are now handled by the "request" package itself.
