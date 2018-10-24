@@ -21,7 +21,8 @@ describe('thuisbezorgd-services', function () {
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'details1.html'), 'utf-8');
         let details = service._parseOrderDetailsHtml(html);
 
-        expect(details.delivery).toBe('Delivery');
+        expect(details.delivery).toBe('DELIVERY');
+        expect(details.asap).toBe(false);
         expect(details.paid).toBe('Paid electronically');
         expect(details.name).toBe('Hans Jansen');
         expect(details.phoneNumber).toBe('0612345678');
@@ -37,7 +38,8 @@ describe('thuisbezorgd-services', function () {
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'details2.html'), 'utf-8');
         let details = service._parseOrderDetailsHtml(html);
 
-        expect(details.delivery).toBe('Pickup');
+        expect(details.delivery).toBe('PICKUP');
+        expect(details.asap).toBe(false);
         expect(details.paid).toBe('Cash');
         expect(details.name).toBe('Jerwin');
         expect(details.phoneNumber).toBe('0614404445');
@@ -56,7 +58,8 @@ describe('thuisbezorgd-services', function () {
         let html = fs.readFileSync(path.join(__dirname, '..', 'spec', 'data', 'details3.html'), 'utf-8');
         let details = service._parseOrderDetailsHtml(html);
 
-        expect(details.delivery).toBe('Delivery');
+        expect(details.delivery).toBe('DELIVERY');
+        expect(details.asap).toBe(true);
         expect(details.paid).toBe('Paid electronically');
         expect(details.name).toBe('Ineke Grooters');
         expect(details.phoneNumber).toBe('0631291291');

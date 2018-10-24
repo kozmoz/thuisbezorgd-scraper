@@ -65,6 +65,7 @@ function getOrders(configuration) {
                 'city': 'Nijverdal',
                 'address': '7443ZM, Prins Hendrikstraat 19',
                 'delivery': 'DELIVERY',
+                'asap' : false,
                 'paid': 'Paid electronically',
                 'name': 'Janneke',
                 'phoneNumber': '0653830123',
@@ -85,6 +86,7 @@ function getOrders(configuration) {
                 'city': 'Nijverdal',
                 'address': '7443BT, Grotestraat 222',
                 'delivery': 'PICKUP',
+                'asap' : true,
                 'paid': 'Customer pays in cash',
                 'name': 'Piet',
                 'phoneNumber': '0653830124',
@@ -287,10 +289,16 @@ function parseOrderDetailsHtml(html) {
     const details = {};
     const $ = cheerio.load(html);
 
-    // DELIVERY
+    // Delivery details.
     const $orderDetails = $('#order_details');
 
-    details.delivery = $orderDetails.find('.summary .order-info-heading td').text();
+    // PICKUP / DELIVERY
+    details.delivery = ($orderDetails.find('.summary .order-info-heading td').text() || '').toUpperCase().trim();
+
+    // Delivery at <strong>18:15</strong
+    // Delivery a.s.a.p.
+    const timeDelivery = $orderDetails.find('#delivery_time').text();
+    details.asap = !!(timeDelivery && timeDelivery.indexOf('a.s.a.p') !== -1);
 
     // Paid electronically / Customer pays in cash, exact
     details.paid = $orderDetails.find('.content p:nth-child(2)').text();
