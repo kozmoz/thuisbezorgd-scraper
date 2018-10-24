@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.2.0 (October 24, 2018)
+- Bugfix: Delivery type in capitals; DELIVERY / PICKUP
+- Improvement: If the customer requested to receive the order a.s.a.p., "asap" is set to true, false otherwise
+
 ### 1.1.6 (October 17, 2018)
 - Bugfix: In case of error, it shows [Object Object] on the command line, instead of the error message
 - Improvement: The dates should be in local time, don't show it as UTC time
