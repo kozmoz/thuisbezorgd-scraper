@@ -81,7 +81,7 @@ describe('thuisbezorgd-services', function () {
         expect(orders.length).toBe(1);
         expect(orders[0].id).toBe('OQ35ORNQOO');
         expect(orders[0].orderCode).toBe('AXEDON');
-        expect(orders[0].status).toBe('New');
+        expect(orders[0].status).toBe('NEW');
         expect(orders[0].time).toBe(todayDate + 'T17:15:00');
         expect(orders[0].timeDelivery).toBe(undefined);
         expect(orders[0].amount).toBe(1545);
@@ -100,15 +100,15 @@ describe('thuisbezorgd-services', function () {
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OQ35ORNQOO');
         expect(orders[0].orderCode).toBe('AXEDON');
-        expect(orders[0].status).toBe('Confirmed');
+        expect(orders[0].status).toBe('CONFIRMED');
         expect(orders[0].time).toBe(todayDate + 'T17:15:00');
         expect(orders[0].timeDelivery).toBe(todayDate + 'T17:50:00');
         expect(orders[0].amount).toBe(1545);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7443BS, Grotestraat 222');
 
-        expect(orders[1].status).toBe('Confirmed');
-        expect(orders[2].status).toBe('Confirmed');
+        expect(orders[1].status).toBe('CONFIRMED');
+        expect(orders[2].status).toBe('CONFIRMED');
     });
 
 
@@ -123,15 +123,15 @@ describe('thuisbezorgd-services', function () {
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OO0PN0OQOO');
         expect(orders[0].orderCode).toBe('DFICYI');
-        expect(orders[0].status).toBe('Confirmed');
+        expect(orders[0].status).toBe('CONFIRMED');
         expect(orders[0].time).toBe(todayDate + 'T18:18:00');
         expect(orders[0].timeDelivery).toBe(todayDate + 'T18:50:00');
         expect(orders[0].amount).toBe(2965);
         expect(orders[0].city).toBe('Nijverdal');
         expect(orders[0].address).toBe('7442AD, Croeselaan 2');
 
-        expect(orders[1].status).toBe('Confirmed');
-        expect(orders[2].status).toBe('Delivery');
+        expect(orders[1].status).toBe('CONFIRMED');
+        expect(orders[2].status).toBe('DELIVERY');
     });
 
 
@@ -146,7 +146,7 @@ describe('thuisbezorgd-services', function () {
         expect(orders.length).toBe(3);
         expect(orders[0].id).toBe('OQP013OQOO');
         expect(orders[0].orderCode).toBe('ZL41AT');
-        expect(orders[0].status).toBe('Kitchen');
+        expect(orders[0].status).toBe('KITCHEN');
         expect(orders[0].time).toBe(todayDate + 'T18:34:00');
         expect(orders[0].timeDelivery).toBe(todayDate + 'T19:20:00');
         expect(orders[0].amount).toBe(4795);
@@ -154,16 +154,16 @@ describe('thuisbezorgd-services', function () {
         expect(orders[0].address).toBe('7443PX, Croeselaan 5');
         expect(orders[0].distance).toBe('2.4km');
 
-        expect(orders[1].status).toBe('Delivery');
+        expect(orders[1].status).toBe('DELIVERY');
         expect(orders[1].distance).toBe('0.1km');
-        expect(orders[2].status).toBe('Delivery');
+        expect(orders[2].status).toBe('DELIVERY');
         expect(orders[2].distance).toBe('1.3km');
     });
 
 
     it('should get the status from the given list of class names', function () {
         let className = service._getStatusFromClassName('order-link narrow status-confirmed');
-        expect(className).toBe('Confirmed');
+        expect(className).toBe('CONFIRMED');
     });
 
 

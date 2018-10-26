@@ -1,5 +1,8 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.2.1 (Todo: release)
+- Convert status to uppercase; New -> NEW, Confirmed -> CONFIRMED, Kitchen -> KITCHEN, Delivery -> DELIVERY
+
 ### 1.2.0 (October 24, 2018)
 - Bugfix: Delivery type in capitals; DELIVERY / PICKUP
 - Improvement: If the customer requested to receive the order a.s.a.p., "asap" is set to true, false otherwise

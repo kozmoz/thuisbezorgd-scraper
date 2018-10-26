@@ -65,7 +65,7 @@ function getOrders(configuration) {
                 'city': 'Nijverdal',
                 'address': '7443ZM, Prins Hendrikstraat 19',
                 'delivery': 'DELIVERY',
-                'asap' : false,
+                'asap': false,
                 'paid': 'Paid electronically',
                 'name': 'Janneke',
                 'phoneNumber': '0653830123',
@@ -86,7 +86,7 @@ function getOrders(configuration) {
                 'city': 'Nijverdal',
                 'address': '7443BT, Grotestraat 222',
                 'delivery': 'PICKUP',
-                'asap' : true,
+                'asap': true,
                 'paid': 'Customer pays in cash',
                 'name': 'Piet',
                 'phoneNumber': '0653830124',
@@ -406,10 +406,14 @@ function trimExcessiveWhitespace(text) {
  * Determine order status based on list of class names.
  *
  * @param {String} className String with single class name or multiple class names
- * @return {String} Status 'Confirmed', 'Delivery', 'Kitchen' or an empty string
+ * @return {String} Status 'CONFIRMED', 'DELIVERY', 'KITCHEN' or an empty string
  */
 function getStatusFromClassName(className) {
-    return ucFirst((className || '').trim().split(/\s+/).find(item => item.indexOf('status-') !== -1).replace('status-', ''));
+    return (className || '').trim()
+        .split(/\s+/)
+        .find(item => item.indexOf('status-') !== -1)
+        .replace('status-', '')
+        .toUpperCase();
 }
 
 
