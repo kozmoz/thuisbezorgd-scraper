@@ -132,6 +132,8 @@ describe('thuisbezorgd-services', function () {
 
         expect(orders[1].status).toBe('CONFIRMED');
         expect(orders[2].status).toBe('DELIVERY');
+
+        expect(orders[2].address).toBe('7443BS, Grotestraat 222');
     });
 
 

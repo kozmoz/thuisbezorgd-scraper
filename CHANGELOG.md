@@ -1,7 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
-### 1.2.1 (Todo: release)
-- Convert status to uppercase; New -> NEW, Confirmed -> CONFIRMED, Kitchen -> KITCHEN, Delivery -> DELIVERY
+### 1.3.0 (December 1, 2018)
+- Improvement/breaking change: Convert status to uppercase; 
+  New -> NEW, Confirmed -> CONFIRMED, Kitchen -> KITCHEN, Delivery -> DELIVERY
+- Improvement: Trim comma and spaces from address
 
 ### 1.2.0 (October 24, 2018)
 - Bugfix: Delivery type in capitals; DELIVERY / PICKUP

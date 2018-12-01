@@ -255,7 +255,7 @@ function parseOrderListHtml(html) {
         const city = $('td.city', tbodyItem).text().trim();
         // Amount in cents
         const amount = Number.parseInt($('td.amount', tbodyItem).text().replace(/[^0-9]+/g, ''));
-        const address = $('td[colspan=2]', tbodyItem).text().trim();
+        const address = $('td[colspan=2]', tbodyItem).text().replace(/(^[,\s]+)|([,\s]+$)/g, '') /* Trim comma, space */;
         const distance = $('td.distance', tbodyItem).text().replace(',', '.').replace(/\s+/, '');
 
         orders.push({
