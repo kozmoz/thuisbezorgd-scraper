@@ -2,6 +2,8 @@
 Thuisbezorgd-scraper
 ====================
 
+![npm package version](https://img.shields.io/npm/v/thuisbezorgd-scraper.svg)
+
 About
 -----
 Thuisbezorgd-scraper scrapes the Thuisbezorgd.nl / Takeaway.com restaurant website to get all current orders. 
