@@ -197,7 +197,20 @@ function getOrders(configuration) {
                 }, (error, response, html) => {
 
                     if (verbose) {
-                        console.log(`${debugPrefix}HTML GET: ${html}`);
+                        console.log(`${debugPrefix}HTML GET statusCode: ${response.statusCode}`);
+                        console.log(`${debugPrefix}HTML GET: "${html}"`);
+                    }
+
+                    // Error.
+                    if (error) {
+                        rejectFn('Accessing url ' + urlOrders + ' to get the orders failed: ' + JSON.stringify(error));
+                        return;
+                    }
+
+                    // Empty HTML
+                    if (!html) {
+                        rejectFn('The HTML response for ' + urlOrders + ' is empty: ' + html);
+                        return;
                     }
 
                     const $ = cheerio.load(html);

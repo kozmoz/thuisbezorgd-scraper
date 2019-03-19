@@ -1,5 +1,8 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.3.2 (March 19, 2019)
+- Improvement: Added extra error checking while loading the orders page
+
 ### 1.3.0 (December 1, 2018)
 - Improvement/breaking change: Convert status to uppercase; 
   New -> NEW, Confirmed -> CONFIRMED, Kitchen -> KITCHEN, Delivery -> DELIVERY
