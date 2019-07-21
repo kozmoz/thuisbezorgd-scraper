@@ -52,6 +52,7 @@ For example, the output of the command above could look like this:
 				"delivery": "DELIVERY",
 				"paid": "Paid electronically",
 				"name": "Jan Jansen",
+				"notes": "",
 				"phoneNumber": "0548 612345",
 				"products": [
 					"1 [Combi boxen] Combibox starter € 13,95",
@@ -73,6 +74,7 @@ For example, the output of the command above could look like this:
 				"delivery": "DELIVERY",
 				"paid": "Paid electronically",
 				"name": "Jan van Veen",
+				"notes": "",
 				"phoneNumber": "0612345678",
 				"products": [
 					"4 [Poke bowl] Poké bowl Ossenhaas € 35,80",
