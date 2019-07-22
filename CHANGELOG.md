@@ -1,5 +1,8 @@
 # Changes to thuisbezorgd-scraper
 
+### 1.3.2 - Addition (July 21, 2019)
+- Improvement: output will now also show customers notes 
+
 ### 1.3.2 (March 19, 2019)
 - Improvement: Added extra error checking while loading the orders page
 

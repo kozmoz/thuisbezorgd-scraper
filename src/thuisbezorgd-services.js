@@ -57,40 +57,42 @@ function getOrders(configuration) {
         if (debug) {
             const demoData = [{
                 'id': 'NPPP75771O',
-                'status': 'Confirmed',
                 'orderCode': 'ELMNZX',
+                'status': 'Confirmed',
                 'time': '2017-11-11T16:13:00',
                 'timeDelivery': '2017-11-11T16:45:00',
                 'amount': 3945,
                 'city': 'Nijverdal',
                 'address': '7443ZM, Prins Hendrikstraat 19',
+                'distance': '',
                 'delivery': 'DELIVERY',
                 'asap': false,
                 'paid': 'Paid electronically',
                 'name': 'Janneke',
+                'notes': 'Bel is kapot - graag kloppen',
                 'phoneNumber': '0653830123',
-                'distance': '3.2km',
                 'products': [
-                    '1 [Combi boxen] Combibox starter € 13,95',
+                    '1 [Combi boxen] Combibox starter € 13,95 + Zakje milde sambal',
                     '1 [Maki] Maki kappa € 2,10 + 4 stuks',
                     'Delivery costs € 1,50',
                     '€ 17,55'
                 ]
             }, {
                 'id': 'NPPP757711',
-                'status': 'Delivery',
                 'orderCode': 'ELMNZY',
+                'status': 'Delivery',
                 'time': '2017-11-11T18:50:00',
                 'timeDelivery': '2017-11-11T19:30:00',
                 'amount': 1000,
                 'city': 'Nijverdal',
                 'address': '7443BT, Grotestraat 222',
+                'distance': '0.5km',
                 'delivery': 'PICKUP',
                 'asap': true,
-                'paid': 'Customer pays in cash',
+                'paid': 'Customer pays with € 50,00',
                 'name': 'Piet',
+                'notes': 'Graag een beetje sambal apart - niet er op',
                 'phoneNumber': '0653830124',
-                'distance': '0.5km',
                 'products': [
                     '4 [Poke bowl] Poké bowl Ossenhaas € 35,80',
                     '2 [Combi boxen] Combibox rolls € 65,00 + 2 persoons',
@@ -318,6 +320,9 @@ function parseOrderDetailsHtml(html) {
 
     // Get text of first textNode. (and also get the HTML encoded characters right).
     details.name = $orderDetails.find('.content > p').contents().eq(0).text();
+    
+    // Get notes from customers (if available).
+    details.notes = trimExcessiveWhitespace($orderDetails.find('.notes').contents().text());
 
     // Phone number is the last line of the name, address text.
     // (.html() can return undefined, in that case default to empty string).
