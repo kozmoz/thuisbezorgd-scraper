@@ -25,6 +25,7 @@ describe('thuisbezorgd-services', function () {
         expect(details.asap).toBe(false);
         expect(details.paid).toBe('Paid electronically');
         expect(details.name).toBe('Hans Jansen');
+        expect(details.notes).toBe('');
         expect(details.phoneNumber).toBe('0612345678');
         expect(details.products.length).toBe(3);
         expect(details.products[0]).toBe('1 [Combi boxen] Combibox starter € 13,95');
@@ -42,6 +43,7 @@ describe('thuisbezorgd-services', function () {
         expect(details.asap).toBe(false);
         expect(details.paid).toBe('Cash');
         expect(details.name).toBe('Jerwin');
+        expect(details.notes).toBe('');
         expect(details.phoneNumber).toBe('0614404445');
         expect(details.products.length).toBe(6);
         expect(details.products[0]).toBe('1 [Sashimi] Wakame 100 gr € 4,95');
@@ -62,6 +64,7 @@ describe('thuisbezorgd-services', function () {
         expect(details.asap).toBe(true);
         expect(details.paid).toBe('Paid electronically');
         expect(details.name).toBe('Ineke Grooters');
+        expect(details.notes).toBe('Bel is kapot - graag kloppen');
         expect(details.phoneNumber).toBe('0631291291');
         expect(details.products.length).toBe(4);
         expect(details.products[0]).toBe('1 [Combi boxen] Combibox rolls € 32,50 + 2 persoons');

@@ -68,6 +68,7 @@ function getOrders(configuration) {
                 'asap': false,
                 'paid': 'Paid electronically',
                 'name': 'Janneke',
+                'notes': 'Bel is kapot - graag kloppen',
                 'phoneNumber': '0653830123',
                 'distance': '3.2km',
                 'products': [
@@ -89,6 +90,7 @@ function getOrders(configuration) {
                 'asap': true,
                 'paid': 'Customer pays in cash',
                 'name': 'Piet',
+                'notes': '',
                 'phoneNumber': '0653830124',
                 'distance': '0.5km',
                 'products': [
@@ -295,7 +297,7 @@ function parseOrderListHtml(html) {
  * number, products etc.
  *
  * @param {String} html Raw HTML of details page
- * @return {Object} Object with properties for details; delivery, paid, name, phoneNumber and products
+ * @return {Object} Object with properties for details; delivery, paid, name, notes, phoneNumber and products
  */
 function parseOrderDetailsHtml(html) {
 
@@ -318,6 +320,9 @@ function parseOrderDetailsHtml(html) {
 
     // Get text of first textNode. (and also get the HTML encoded characters right).
     details.name = $orderDetails.find('.content > p').contents().eq(0).text();
+
+    // Get notes from customers (if available).
+    details.notes = trimExcessiveWhitespace($orderDetails.find('.notes').contents().text());
 
     // Phone number is the last line of the name, address text.
     // (.html() can return undefined, in that case default to empty string).
