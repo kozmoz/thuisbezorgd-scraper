@@ -1,3 +1,11 @@
+**Update May 19 2020**
+
+I'm not using the service of Thuisbezorgd.nl / Takeaway.com anymore 
+so I'm not able to add new functionality to this scraper. 
+
+Probably it's better to use the official Takeaway.com REST API. 
+Please contact posapi@takeaway.com for details.
+
 
 Thuisbezorgd-scraper
 ====================
