@@ -1,3 +1,15 @@
+**Update October 2022**
+
+Apparently Thuisbezorgd.nl / Takeaway.com has written a new web application (and iOS app and Android app) 
+to show today's live orders. 
+
+I completely rewrote this service from scratch, now using the Thuisbezorgd.nl web application's underlying API calls. 
+The way to receive the data is much cleaner now. Actually it's technically not an HTML scraper anymore. For historical 
+reasons I will keep the name anyway. 
+
+The only drawback is that the data format is not backwards compatible, hence the new version numbering. 
+
+
 **Update May 19 2020**
 
 I'm not using the service of Thuisbezorgd.nl / Takeaway.com anymore 
