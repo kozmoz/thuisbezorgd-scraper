@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.0.1 - (October 9, 2022)
+
+- Improvement: Removed unused npm dependencies.
+
 ### 2.0.0 - (October 8, 2022)
 
 - Complete rewrite of service. Now using "live orders" webpage. Unfortunately the format is not backwards compatible.
