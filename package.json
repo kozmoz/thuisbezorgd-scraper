@@ -22,18 +22,15 @@
   "url": "https://github.com/kozmoz/thuisbezorgd-scraper",
   "license": "CC0-1.0",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
-    "cli": "^1.0.1",
-    "moment": "^2.22.2",
-    "request": "^2.88.0"
+    "cli": "1.0.1"
   },
   "devDependencies": {
-    "eslint": "^4.19.1",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
-    "jasmine": "^2.99.0"
+    "eslint": "8.25.0",
+    "eslint-config-standard": "10.2.1",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-node": "5.2.1",
+    "eslint-plugin-promise": "3.8.0",
+    "eslint-plugin-standard": "3.1.0",
+    "jasmine": "2.99.0"
   }
 }

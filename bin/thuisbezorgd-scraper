@@ -17,8 +17,7 @@ const options = cli.parse({
     username: ['u', 'Thuisbezorgd.nl restaurant username (required)', 'string'],
     password: ['p', 'Thuisbezorgd.nl restaurant password (required)', 'string'],
     verbose: ['v', 'Be verbose; show extra logging during execution'],
-    version: [false, 'Returns application name and version'],
-    debug: [false, 'Returns testdata only, no real remote calls are made']
+    version: [false, 'Returns application name and version']
 });
 
 const program = path.basename(process.argv[1]);
