@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.0.2 - (October 9, 2022)
+
+- Improvement: Added types in package.json
+
 ### 2.0.1 - (October 9, 2022)
 
 - Improvement: Removed unused npm dependencies.

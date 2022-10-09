@@ -5,7 +5,10 @@ export interface IThuisbezorgdOrder {
      * e.g. 2B7RVE
      */
     public_reference: string;
-    status: "delivered"|"confirmed";
+    /**
+     * Current status of the order.
+     */
+    status: "in_delivery"|"delivered"|"confirmed";
     /**
      * Date as string, e.g. "2022-10-03T15:11:53Z"
      */
