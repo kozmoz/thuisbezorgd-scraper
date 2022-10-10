@@ -8,7 +8,7 @@ export interface IThuisbezorgdOrder {
     /**
      * Current status of the order.
      */
-    status: "in_delivery"|"delivered"|"confirmed";
+    status: "confirmed"|"kitchen"|"in_delivery"|"delivered";
     /**
      * Date as string, e.g. "2022-10-03T15:11:53Z"
      */

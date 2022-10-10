@@ -21,13 +21,20 @@ const THUISBEZORGD_PATH_LOGIN = '/api/sso/auth-by-credentials';
 const THUISBEZORGD_PATH_RESTAURANT = '/api/restaurant';
 const THUISBEZORGD_PATH_ORDERS = '/api/orders';
 
+// noinspection SpellCheckingInspection
 const HTTP_HEADERS = {
     // 'User-Agent': 'liveorders/2 CFNetwork/1390 Darwin/22.0.0',
+    'Host': HOST,
     'User-Agent': USER_AGENT_STRING,
     'Content-Type': 'application/json',
     'Accept': 'application/json, text/plain, */*',
     'Accept-Encoding': 'gzip',
-    'Accept-Language': 'nl-NL,nl;q=0.9'
+    'Accept-Language': 'nl-NL,nl;q=0.9',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Origin': 'https://live-orders.takeaway.com',
+    'Referer': 'https://live-orders.takeaway.com',
+    'X-Requested-With': 'XMLHttpRequest'
 };
 
 /**
@@ -74,9 +81,11 @@ function login(configuration) {
             console.log(`${DEBUG_PREFIX}Login POST request to receive accessToken`);
         }
 
-        const httpRequest = https.request(options, (/** @type {module:http.ServerResponse} */ httpResponse) => {
+        const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
 
             const statusCode = httpResponse.statusCode;
+            // noinspection JSUnresolvedVariable
+            /** @type {IncomingHttpHeaders} */
             const parsedResponseHeaders = httpResponse.headers;
 
             const contentType = parsedResponseHeaders['content-type'] || 'Unknown';
@@ -177,13 +186,14 @@ function getRestaurant(accessToken, configuration) {
         // https://live-orders-api.takeaway.com/api/restaurant
         /** @type {module:http.RequestOptions} */
         const options = {
+            agent: false,
             hostname: HOST,
             port: 443,
             path: THUISBEZORGD_PATH_RESTAURANT,
             method: 'GET',
             headers: {
                 ...HTTP_HEADERS,
-                'authorization': `Bearer ${accessToken}`
+                'Authorization': `Bearer ${accessToken}`
             },
             rejectUnauthorized: false
         };
@@ -192,9 +202,11 @@ function getRestaurant(accessToken, configuration) {
             console.log(`${DEBUG_PREFIX}Login GET request to receive restaurant info`);
         }
 
-        const httpRequest = https.request(options, (/** @type {module:http.ServerResponse} */ httpResponse) => {
+        const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
 
             const statusCode = httpResponse.statusCode;
+            // noinspection JSUnresolvedVariable
+            /** @type {IncomingHttpHeaders} */
             const parsedResponseHeaders = httpResponse.headers;
 
             const contentType = parsedResponseHeaders['content-type'] || 'Unknown';
@@ -219,6 +231,7 @@ function getRestaurant(accessToken, configuration) {
 
                 if (statusCode !== 200) {
                     rejectFn({
+                        status: statusCode,
                         errorCode: 'HTTP_ERROR',
                         errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access Thuisbezorgd.nl API`
                     });
@@ -288,7 +301,7 @@ function getOrders(accessToken, reference, configuration) {
         if (!reference) {
             rejectFn({
                 errorCode: 'NO_CREDENTIALS',
-                errorMessage: 'No restaurant referenc, cannot access Thuisbezorgd.nl API'
+                errorMessage: 'No restaurant reference, cannot access Thuisbezorgd.nl API'
             });
             return;
         }
@@ -296,18 +309,15 @@ function getOrders(accessToken, reference, configuration) {
         // https://live-orders-api.takeaway.com/api/orders
         /** @type {module:http.RequestOptions} */
         const options = {
+            agent: false,
             hostname: HOST,
             port: 443,
             path: THUISBEZORGD_PATH_ORDERS,
             method: 'GET',
             headers: {
-                // 'User-Agent': 'liveorders/2 CFNetwork/1390 Darwin/22.0.0',
-                'User-Agent': USER_AGENT_STRING,
-                'Accept': 'application/json, text/plain, */*',
-                'Accept-Encoding': 'gzip',
-                'Accept-Language': 'nl-NL,nl;q=0.9',
-                'authorization': `Bearer ${accessToken}`,
-                'x-restaurant-id': reference
+                ...HTTP_HEADERS,
+                'Authorization': `Bearer ${accessToken}`,
+                'X-restaurant-id': reference
             },
             rejectUnauthorized: false
         };
@@ -316,9 +326,11 @@ function getOrders(accessToken, reference, configuration) {
             console.log(`${DEBUG_PREFIX}Login GET request to receive orders`);
         }
 
-        const httpRequest = https.request(options, (/** @type {module:http.ServerResponse} */ httpResponse) => {
+        const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
 
             const statusCode = httpResponse.statusCode;
+            // noinspection JSUnresolvedVariable
+            /** @type {IncomingHttpHeaders} */
             const parsedResponseHeaders = httpResponse.headers;
 
             const contentType = parsedResponseHeaders['content-type'] || 'Unknown';
@@ -343,6 +355,7 @@ function getOrders(accessToken, reference, configuration) {
 
                 if (statusCode !== 200) {
                     rejectFn({
+                        status: statusCode,
                         errorCode: 'HTTP_ERROR',
                         errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access Thuisbezorgd.nl API`
                     });
@@ -393,7 +406,7 @@ function getOrders(accessToken, reference, configuration) {
 /**
  * Pipe through gzip if the contents is gzipped.
  *
- * @param {{}} parsedResponseHeaders Headers object as key-value
+ * @param {IncomingHttpHeaders} parsedResponseHeaders Headers object as key-value
  * @param {module:http.ServerResponse} httpResponse HTTP response
  * @returns {module:http.ServerResponse | module:zlib.Gunzip} Piped response
  */
@@ -417,6 +430,7 @@ function wrapForGzip(parsedResponseHeaders, httpResponse) {
  * @return {Promise<IThuisbezorgdOrder[]>} The orders or an empty list
  */
 exports.getOrders = (configuration) => {
+
     return new Promise((resolveFn, rejectFn) => {
         login(configuration)
             .then(accessToken => {
@@ -429,11 +443,20 @@ exports.getOrders = (configuration) => {
                         }
                         const reference = result.reference;
                         getOrders(accessToken, reference, configuration)
-                            .then(resolveFn)
-                            .catch(rejectFn);
+                            .then(orders => {
+                                resolveFn(orders);
+                            })
+                            .catch(error => {
+                                rejectFn(error);
+                            });
                     })
-                    .catch(rejectFn);
+                    .catch(error => {
+                        rejectFn(error);
+                    });
+
             })
-            .catch(rejectFn);
+            .catch(error => {
+                rejectFn(error);
+            });
     });
 };

@@ -1,8 +1,16 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.1.0 - (October 10, 2022)
+
+- Improvement: Added "no-cache" headers.
+- Improvement: Object types.
+- Improvement: Return http(s) status in case of connection error.
+- Bugfix: Don't rely on global node https Agent.
+- Bugfix: Added spread operator to ESLint config.
+
 ### 2.0.2 - (October 9, 2022)
 
-- Improvement: Added types in package.json
+- Improvement: Added types in package.json.
 
 ### 2.0.1 - (October 9, 2022)
 
