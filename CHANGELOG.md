@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.1.1 - (October 10, 2022)
+
+- Bugfix: New https Agent for every call.
+
 ### 2.1.0 - (October 10, 2022)
 
 - Improvement: Added "no-cache" headers.

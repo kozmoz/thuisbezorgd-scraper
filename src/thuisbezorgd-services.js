@@ -66,6 +66,7 @@ function login(configuration) {
 
         /** @type {module:http.RequestOptions} */
         const options = {
+            agent: false,
             hostname: HOST,
             port: 443,
             path: THUISBEZORGD_PATH_LOGIN,
