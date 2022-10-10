@@ -19,7 +19,6 @@ export interface IThuisbezorgdOrder {
      * Date as string, e.g. "2022-10-03T15:11:53Z"
      */
     requested_time: string,
-    // Not sure about "cash"
     payment_type: "online"|"cash";
     /**
      * Date as string, e.g. "2022-10-03T15:11:53Z"
@@ -69,7 +68,7 @@ export interface IThuisbezorgdOrder {
         extra: [];
     };
     payment: {
-        // Same as "payment_type" above? Not sure about cash.
+        // Same as "payment_type".
         method: "online"|"cash";
         pays_with: number;
         already_paid_amount: number;
