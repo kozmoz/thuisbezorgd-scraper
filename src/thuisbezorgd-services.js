@@ -153,7 +153,7 @@ function login(configuration) {
 
         const errorMessage = error.message || error;
         rejectFn({
-          errorCode: "HTTP_ERROR",
+          errorCode: (errorMessage === "socket hang up") ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl SSO service request failed. "${errorMessage}", cannot log in to Thuisbezorgd.nl`
         });
       });
@@ -271,7 +271,7 @@ function getRestaurant(accessToken, configuration) {
 
         const errorMessage = error.message || error;
         rejectFn({
-          errorCode: "HTTP_ERROR",
+          errorCode: (errorMessage === "socket hang up") ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
         });
       });
@@ -395,7 +395,7 @@ function getOrders(accessToken, reference, configuration) {
 
         const errorMessage = error.message || error;
         rejectFn({
-          errorCode: "HTTP_ERROR",
+          errorCode: (errorMessage === "socket hang up") ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
         });
       });
@@ -422,7 +422,6 @@ function wrapForGzip(parsedResponseHeaders, httpResponse) {
   }
   return httpResponse;
 }
-
 
 // Public functions.
 

@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.2.1 - January 22, 2023
+
+- Improvement: In case of connection error, return more specific error code "HTTP_ERROR_CONNECTION".
+
 ### 2.2.0 - January 22, 2023
 
 - Improvement: Added httpStatusCode to error-object in case the remote service fails with HTTP error.
