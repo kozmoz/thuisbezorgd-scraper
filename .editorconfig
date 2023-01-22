@@ -4,21 +4,19 @@
 # top-most EditorConfig file
 root = true
 
-max_line_length = 150
-
 # Unix-style newlines with a newline ending every file
 [*]
 end_of_line = lf
 insert_final_newline = true
 
 # Set default charset
-[*.{js,json,html}]
+[*.{js,json,html,ts}]
 charset = utf-8
 
 # 4 space indentation
-[*.{js,html}]
+[*.{js,html,ts}]
 indent_style = space
-indent_size = 4
+indent_size = 2
 
 # 2 space indentation
 [*.json]
@@ -27,8 +25,16 @@ indent_size = 2
 
 # Domain-Specific Properties
 # Not implemented in all plugins.
-quote_type = single
+ij_html_quote_style = double
+max_line_length = 150
+tab_width = 2
+# noinspection EditorConfigKeyCorrectness
+quote_type = double
+# noinspection EditorConfigKeyCorrectness
 curly_bracket_next_line = false
+# noinspection EditorConfigKeyCorrectness
 spaces_around_operators = false
+# noinspection EditorConfigKeyCorrectness
 indent_brace_style = K&R
+# noinspection EditorConfigKeyCorrectness
 continuation_indent_size = 8

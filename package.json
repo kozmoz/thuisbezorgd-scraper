@@ -1,6 +1,6 @@
 {
   "name": "thuisbezorgd-scraper",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Scrape Thuisbezorgd.nl/Takeaway.com restaurant website and get all current orders",
   "repository": {
     "type": "git",
@@ -26,12 +26,15 @@
     "cli": "1.0.1"
   },
   "devDependencies": {
-    "eslint": "8.25.0",
-    "eslint-config-standard": "10.2.1",
-    "eslint-plugin-import": "2.26.0",
-    "eslint-plugin-node": "5.2.1",
-    "eslint-plugin-promise": "3.8.0",
-    "eslint-plugin-standard": "3.1.0",
-    "jasmine": "2.99.0"
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "eslint": "8.32.0",
+    "eslint-config-standard": "17.0.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "6.1.1",
+    "eslint-plugin-standard": "5.0.0",
+    "jasmine": "4.5.0",
+    "typescript": "4.9.4"
   }
 }

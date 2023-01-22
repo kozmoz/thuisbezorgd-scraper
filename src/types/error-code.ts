@@ -1,0 +1,4 @@
+export enum ErrorCode {
+  NO_CREDENTIALS = "NO_CREDENTIALS",
+  PARSE_ERROR = "PARSE_ERROR"
+}

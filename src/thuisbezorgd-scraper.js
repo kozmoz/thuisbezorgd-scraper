@@ -1,5 +1,5 @@
-const path = require('path');
-const thuisbezorgdService = require(path.join(__dirname, 'thuisbezorgd-services'));
+const path = require("path");
+const thuisbezorgdService = require(path.join(__dirname, "thuisbezorgd-services"));
 
 // make scrape() public available.
 exports.scrape = scrape;

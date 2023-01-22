@@ -1,24 +1,25 @@
 #!/usr/bin/env node
+// noinspection JSUnresolvedFunction
 
-const path = require('path');
+const path = require("path");
 
 // https://www.npmjs.com/package/cli
-const cli = require('cli');
+const cli = require("cli");
 
 // Read version info of thuisbezorgd-scraper.
-const packageJson = require(path.join(__dirname, '..', 'package.json'));
+const packageJson = require(path.join(__dirname, "..", "package.json"));
 
-const thuisbezorgdScraper = require(path.join(__dirname, '..', 'src', 'thuisbezorgd-scraper'));
+const thuisbezorgdScraper = require(path.join(__dirname, "..", "src", "thuisbezorgd-scraper"));
 
 // Display app name and version on --version.
 cli.setApp(packageJson.name, packageJson.version);
 
 const options = cli.parse({
-    username: ['u', 'Thuisbezorgd.nl restaurant username (required)', 'string'],
-    password: ['p', 'Thuisbezorgd.nl restaurant password (required)', 'string'],
-    verbose: ['v', 'Be verbose; show extra logging during execution'],
-    version: [false, 'Returns application name and version']
-});
+    username: ["u", "Thuisbezorgd.nl restaurant username (required)", "string"],
+    password: ["p", "Thuisbezorgd.nl restaurant password (required)", "string"],
+    verbose: ["v", "Be verbose; show extra logging during execution"],
+    version: [false, "Returns application name and version"]
+}, false);
 
 const program = path.basename(process.argv[1]);
 
@@ -39,7 +40,7 @@ if (!options.debug && (!options.username || !options.password)) {
 thuisbezorgdScraper.scrape(options)
     .then(orders => console.log(JSON.stringify({orders: orders}, null, 4)))
     .catch(error => {
-        cli.error('Failed to load the orders:');
+        cli.error("Failed to load the orders:");
         cli.error(JSON.stringify(error));
         process.exit(1);
     });

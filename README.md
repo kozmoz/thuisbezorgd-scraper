@@ -10,9 +10,9 @@ reasons I will keep the name anyway.
 The only drawback is that the data format is not backwards compatible, hence the new version numbering. 
 
 
-**Update May 19 2020**
+**Update May 19, 2020**
 
-I'm not using the service of Thuisbezorgd.nl / Takeaway.com anymore 
+I'm not using the service of Thuisbezorgd.nl / Takeaway.com anymore, 
 so I'm not able to add new functionality to this scraper. 
 
 Probably it's better to use the official Takeaway.com REST API. 
@@ -58,53 +58,137 @@ flag to see extra logging during execution.
 For example, the output of the command above could look like this:
 
 	{
-		"orders": [
-			{
-				"id": "O3NQN1105O",
-				"orderCode": "E0NQVH",
-				"status": "CONFIRMED",
-				"time": "2017-11-11T18:55:00",
-				"timeDelivery": "2017-11-11T19:55:00",
-				"amount": 1755,
-				"city": "Nijverdal",
-				"address": "7443LC, Dille 99",
-				"distance": "3.2km",
-				"delivery": "DELIVERY",
-				"paid": "Paid electronically",
-				"name": "Jan Jansen",
-				"notes": "",
-				"phoneNumber": "0548 612345",
-				"products": [
-					"1 [Combi boxen] Combibox starter € 13,95",
-					"1 [Maki] Maki kappa € 2,10 + 4 stuks",
-					"Delivery costs € 1,50",
-					"€ 17,55"
-				]
-			},
-			{
-				"id": "ON3NRNPROO",
-				"orderCode": "1T4UPU",
-				"status": "DELIVERY",
-				"time": "2017-11-11T14:16:00",
-				"timeDelivery": "2017-11-11T15:45:00",
-				"amount": 12365,
-				"city": "Nijverdal",
-				"address": "7443BT, Grotestraat 222",
-				"distance": "3.2km",
-				"delivery": "DELIVERY",
-				"paid": "Paid electronically",
-				"name": "Jan van Veen",
-				"notes": "",
-				"phoneNumber": "0612345678",
-				"products": [
-					"4 [Poke bowl] Poké bowl Ossenhaas € 35,80",
-					"2 [Combi boxen] Combibox rolls € 65,00 + 2 persoons",
-					"2 [Sashimi] Wakame 100 gr € 9,90",
-					"1 [Uramaki] Uramaki ebi tempura € 11,45 + 8 stuks",
-					"Delivery costs € 1,50",
-					"€ 123,65"
-				]
-			}
+		"orders": [ {
+            "id": 5995485231,
+            "public_reference": "2B7RVE",
+            "status": "delivered",
+            "placed_date": "2022-10-03T15:11:53Z",
+            "delivery_type": "delivery",
+            "requested_time": "2022-10-03T16:00:00Z",
+            "payment_type": "online",
+            "restaurant_estimated_delivery_time": "2022-10-03T16:00:00Z",
+            "restaurant_estimated_pickup_time": null,
+            "delivery_service_pickup_time": "2022-10-03T15:58:14Z",
+            "delivery_service_delivery_time": "2022-10-03T16:44:34Z",
+            "currency": "EUR",
+            "remarks": "",
+            "subtotal": 31.45,
+            "restaurant_total": 33.95,
+            "customer_total": 33.95,
+            "delivery_fee": 2.5,
+            "discounts_total": 0,
+            "stampcards_total": 0,
+            "customer": {
+                "full_name": "M",
+                "street": "De Bloeven",
+                "street_number": "33",
+                "phone_number": "0612345678",
+                "company_name": null,
+                "postcode": "7447BS",
+                "city": "Hellendoorn",
+                "extra": []
+            },
+            "payment": {
+                "method": "online",
+                "pays_with": 0,
+                "already_paid_amount": 33.95
+            },
+            "products": [ {
+                "id": 16585766451,
+                "code": "",
+                "name": "Pok\u00e9 bowl ossenhaas en kip",
+                "category_name": "Poke bowl",
+                "quantity": 1,
+                "amount": 13.45,
+                "total_amount": 13.45,
+                "remarks": "",
+                "specifications": [ {
+                   "id": 15075185001,
+                    "code": "",
+                    "name": "Normaal",
+                    "amount": 0
+                } ] },
+                {
+                "id": 16585766551,
+                "code": "",
+                "name": "Uramaki kip en avocado",
+                "category_name": "Uramaki",
+                "quantity": 1,
+                "amount": 6.15,
+                "total_amount": 6.15,
+                "remarks": "",
+                "specifications": [ {
+                    "id": 15075185011,
+                    "code": "",
+                    "name": "4 stuks",
+                    "amount": 0
+                } ]
+                } ],
+            "couriers": [],
+            "food_preparation_duration": null,
+            "delivery_time_duration": null,
+            "is_ready_for_kitchen": false,
+            "created_at": "2022-10-03T15:12:23Z",
+            "with_alcohol": false
+            },
+            {
+            "id": 5996543601,
+            "public_reference": "5JRJAM",
+            "status": "delivered",
+            "placed_date": "2022-10-03T15:52:30Z",
+            "delivery_type": "delivery",
+            "requested_time": null,
+            "payment_type": "online",
+            "restaurant_estimated_delivery_time": "2022-10-03T16:24:00Z",
+            "restaurant_estimated_pickup_time": null,
+            "delivery_service_pickup_time": "2022-10-03T16:16:41Z",
+            "delivery_service_delivery_time": "2022-10-03T16:44:43Z",
+            "currency": "EUR",
+            "remarks": "",
+            "subtotal": 21.8,
+            "restaurant_total": 24.3,
+            "customer_total": 24.3,
+            "delivery_fee": 2.5,
+            "discounts_total": 0,
+            "stampcards_total": 0,
+            "customer": {
+                "full_name": "Arian Jansen",
+                "street": "Klaver",
+                "street_number": "4",
+                "phone_number": "0612345678",
+                "company_name": null,
+                "postcode": "7443TM",
+                "city": "Nijverdal",
+                "extra": []
+            },
+            "payment": {
+                "method": "online",
+                "pays_with": 0,
+                "already_paid_amount": 24.3
+            },
+            "products": [ {
+                "id": 16588965931,
+                "code": "",
+                "name": "Pok\u00e9 bowl tonijn en zalm",
+                "category_name": "Poke bowl",
+                "quantity": 1,
+                "amount": 13.6,
+                "total_amount": 13.6,
+                "remarks": "",
+                "specifications": [ {
+                    "id": 15077904391,
+                    "code": "",
+                    "name": "Normaal",
+                    "amount": 0
+                } ]
+            } ],
+            "couriers": [],
+            "food_preparation_duration": null,
+            "delivery_time_duration": null,
+            "is_ready_for_kitchen": false,
+            "created_at": "2022-10-03T15:52:34Z",
+            "with_alcohol": false
+            }
 		]
 	}
 

@@ -1,5 +1,10 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.2.0 - January 22, 2023
+
+- Improvement: Added httpStatusCode to error-object in case the remote service fails with HTTP error.
+- Improvement: Readme.md updated with v2 format of orders object. 
+
 ### 2.1.1 - (October 10, 2022)
 
 - Bugfix: New https Agent for every call.
