@@ -153,7 +153,7 @@ function login(configuration) {
 
         const errorMessage = error.message || error;
         rejectFn({
-          errorCode: (errorMessage === "socket hang up") ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
+          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl SSO service request failed. "${errorMessage}", cannot log in to Thuisbezorgd.nl`
         });
       });
@@ -271,7 +271,7 @@ function getRestaurant(accessToken, configuration) {
 
         const errorMessage = error.message || error;
         rejectFn({
-          errorCode: (errorMessage === "socket hang up") ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
+          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
         });
       });
@@ -279,6 +279,16 @@ function getRestaurant(accessToken, configuration) {
     // Finish request to external server.
     httpRequest.end();
   });
+}
+
+/**
+ * Test if given error message looks like a connection error.
+ *
+ * @param errorMessage The error message from https.request() function
+ * @return {boolean} True in case it is a connection error
+ */
+function isConnectionError(errorMessage) {
+  return errorMessage === "socket hang up" || (errorMessage || "").indexOf("ECONNRESET") !== -1;
 }
 
 /**
@@ -393,9 +403,9 @@ function getOrders(accessToken, reference, configuration) {
           console.log(`${DEBUG_PREFIX}Orders request error: "${error}"`);
         }
 
-        const errorMessage = error.message || error;
+        const errorMessage = error.message || error || "";
         rejectFn({
-          errorCode: (errorMessage === "socket hang up") ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
+          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
         });
       });
