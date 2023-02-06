@@ -288,7 +288,9 @@ function getRestaurant(accessToken, configuration) {
  * @return {boolean} True in case it is a connection error
  */
 function isConnectionError(errorMessage) {
-  return errorMessage === "socket hang up" || (errorMessage || "").indexOf("ECONNRESET") !== -1;
+  return errorMessage === "socket hang up"
+    || (errorMessage || "").indexOf("ECONNRESET") !== -1
+    || (errorMessage || "").indexOf("SSLV3_ALERT_HANDSHAKE_FAILURE") !== -1;
 }
 
 /**

@@ -1,6 +1,10 @@
 # Changes to thuisbezorgd-scraper
 
-### 2.2.2 - Februari 1, 2023
+### 2.2.3 - February 6, 2023
+
+- Improvement: In case of connection error SSLV3_ALERT_HANDSHAKE_FAILURE, return more specific error code "HTTP_ERROR_CONNECTION".
+
+### 2.2.2 - February 1, 2023
 
 - Improvement: In case of connection error ECONNRESET, return more specific error code "HTTP_ERROR_CONNECTION".
 
