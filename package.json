@@ -1,6 +1,6 @@
 {
   "name": "thuisbezorgd-scraper",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "description": "Scrape Thuisbezorgd.nl/Takeaway.com restaurant website and get all current orders",
   "repository": {
     "type": "git",

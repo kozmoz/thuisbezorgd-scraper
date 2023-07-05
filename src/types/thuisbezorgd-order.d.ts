@@ -29,10 +29,12 @@ export interface IThuisbezorgdOrder {
    */
   restaurant_estimated_pickup_time: string|null;
   /**
+   * The time the delivery service has to pick up this order to be delivered on time.
    * Date as string, e.g. "2022-10-03T15:11:53Z"
    */
   delivery_service_pickup_time: string;
   /**
+   * The time the delivery service has to be delivered.
    * Date as string, e.g. "2022-10-03T15:11:53Z"
    */
   delivery_service_delivery_time: string;

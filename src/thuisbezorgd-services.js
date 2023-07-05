@@ -14,26 +14,40 @@ const packageJson = require(path.join(__dirname, "..", "package.json"));
 /** @namespace packageJson.email */
 const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
 
+const HTTP_METHOD_POST = "POST";
+const HTTP_METHOD_GET = "GET";
+
 const DEBUG_PREFIX = "\x1B[36mDEBUG\x1B[0m: ";
 
 const HOST = "live-orders-api.takeaway.com";
 const THUISBEZORGD_PATH_LOGIN = "/api/sso/auth-by-credentials";
 const THUISBEZORGD_PATH_RESTAURANT = "/api/restaurant";
 const THUISBEZORGD_PATH_ORDERS = "/api/orders";
+const THUISBEZORGD_PATH_ORDER = THUISBEZORGD_PATH_ORDERS + "/{id}";
+const THUISBEZORGD_PATH_CONFIRM_ORDER = THUISBEZORGD_PATH_ORDER + "/confirm-order";
+
+const STATUS_CONFIRMED = "confirmed";
+const STATUS_KITCHEN = "kitchen";
+const STATUS_IN_DELIVERY = "in_delivery";
+const STATUS_DELIVERED = "delivered";
+const STATUSES = [STATUS_CONFIRMED,STATUS_KITCHEN,STATUS_IN_DELIVERY,STATUS_DELIVERED];
+
+const DEFAULT_FOOD_PREPARATION_DURATION = 15;
+const DEFAULT_DELIVERY_TIME_DURATION = 30;
 
 // noinspection SpellCheckingInspection
 const HTTP_HEADERS = {
   // 'User-Agent': 'liveorders/2 CFNetwork/1390 Darwin/22.0.0',
-  "Host": HOST,
+  Host: HOST,
   "User-Agent": USER_AGENT_STRING,
   "Content-Type": "application/json",
-  "Accept": "application/json, text/plain, */*",
+  Accept: "application/json, text/plain, */*",
   "Accept-Encoding": "gzip",
   "Accept-Language": "nl-NL,nl;q=0.9",
   "Cache-Control": "no-cache",
-  "Pragma": "no-cache",
-  "Origin": "https://live-orders.takeaway.com",
-  "Referer": "https://live-orders.takeaway.com",
+  Pragma: "no-cache",
+  Origin: "https://live-orders.takeaway.com",
+  Referer: "https://live-orders.takeaway.com",
   "X-Requested-With": "XMLHttpRequest"
 };
 
@@ -201,7 +215,7 @@ function getRestaurant(accessToken, configuration) {
     };
 
     if (verbose) {
-      console.log(`${DEBUG_PREFIX}Login GET request to receive restaurant info`);
+      console.log(`${DEBUG_PREFIX}Restaurant GET request to receive restaurant info`);
     }
 
     const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
@@ -327,7 +341,7 @@ function getOrders(accessToken, reference, configuration) {
       hostname: HOST,
       port: 443,
       path: THUISBEZORGD_PATH_ORDERS,
-      method: "GET",
+      method: HTTP_METHOD_GET,
       headers: {
         ...HTTP_HEADERS,
         "Authorization": `Bearer ${accessToken}`,
@@ -337,7 +351,7 @@ function getOrders(accessToken, reference, configuration) {
     };
 
     if (verbose) {
-      console.log(`${DEBUG_PREFIX}Login GET request to receive orders`);
+      console.log(`${DEBUG_PREFIX}Orders GET request to receive orders`);
     }
 
     const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
@@ -418,6 +432,140 @@ function getOrders(accessToken, reference, configuration) {
 }
 
 /**
+ * Update the order status.
+ *
+ * @param {string} accessToken Bearer access token
+ * @param {string} reference Restaurant reference code
+ * @param {number} orderId Thuisbezorgd order id
+ * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
+ * @param {number} [foodPreparationDuration] food_preparation_duration in minutes, defaults to 15
+ * @param {number} [deliveryTimeDuration] delivery_time_duration in minutes, defaults to 30
+ * @param {boolean} [verbose] If true, log details. False by default (optional parameter)
+ * @return {Promise<void|IResponseError>} A promise that resolves
+ */
+function updateStatus(accessToken, reference, orderId, status, foodPreparationDuration, deliveryTimeDuration, verbose = false) {
+  return new Promise((resolveFn, rejectFn) => {
+
+    if (!accessToken) {
+      rejectFn({
+        errorCode: "NO_CREDENTIALS",
+        errorMessage: "No access token, cannot access Thuisbezorgd.nl API"
+      });
+      return;
+    }
+    if (!reference) {
+      rejectFn({
+        errorCode: "NO_CREDENTIALS",
+        errorMessage: "No restaurant reference, cannot access Thuisbezorgd.nl API"
+      });
+      return;
+    }
+    if (!orderId) {
+      rejectFn({
+        errorCode: "NO_ORDER_ID",
+        errorMessage: "No order id, cannot update the order status"
+      });
+      return;
+    }
+    if (!STATUSES.includes(status)) {
+      rejectFn({
+        errorCode: "INVALID_STATUS",
+        errorMessage: `Cannot update the order status, the status "${status}" is invalid. Valid statuses: ${JSON.stringify(STATUSES)}`
+      });
+      return;
+    }
+
+    let path;
+    let postData;
+
+    // Confirm action or only a status update.
+    if (status === STATUS_CONFIRMED) {
+      path = THUISBEZORGD_PATH_CONFIRM_ORDER.replace("{id}", `${orderId}`);
+      postData = JSON.stringify({
+        food_preparation_duration: foodPreparationDuration || DEFAULT_FOOD_PREPARATION_DURATION,
+        delivery_time_duration: deliveryTimeDuration || DEFAULT_DELIVERY_TIME_DURATION
+      });
+    } else {
+      path = THUISBEZORGD_PATH_ORDER.replace("{id}", `${orderId}`);
+      postData = JSON.stringify({status});
+    }
+
+    // https://live-orders-api.takeaway.com/api/orders/6253787901/confirm-order
+    /** @type {module:http.RequestOptions} */
+    const options = {
+      agent: false,
+      hostname: HOST,
+      port: 443,
+      path,
+      method: HTTP_METHOD_POST,
+      headers: {
+        ...HTTP_HEADERS,
+        "Content-Length": Buffer.byteLength(postData),
+        "Authorization": `Bearer ${accessToken}`,
+        "X-restaurant-id": reference
+      },
+      rejectUnauthorized: false
+    };
+
+    if (verbose) {
+      console.log(`${DEBUG_PREFIX}POST status "${status}" request update the order status`);
+    }
+
+    const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
+
+      // noinspection JSUnresolvedVariable
+      /** @type {IncomingHttpHeaders} */
+      const parsedResponseHeaders = httpResponse.headers;
+      httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
+
+      // Receive data and add to buffer.
+      const chunks = [];
+      httpResponse.on("data", chunk => chunks.push(chunk));
+
+      /**
+       * End of response reached.
+       */
+      httpResponse.on("end", () => {
+
+        const responseData = Buffer.concat(chunks).toString();
+
+        if (verbose) {
+          console.log(`${DEBUG_PREFIX}Confirm or status request response: "${responseData}"`);
+        }
+
+        const statusCode = httpResponse.statusCode;
+        if (statusCode !== 200) {
+          rejectFn({
+            errorCode: "HTTP_ERROR",
+            errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access Thuisbezorgd.nl API`,
+            httpStatusCode: statusCode
+          });
+          return;
+        }
+        // Status code 200, so successful.
+        resolveFn();
+      });
+    })
+      .on("error", (error) => {
+
+        if (verbose) {
+          console.log(`${DEBUG_PREFIX}Orders request error: "${error}"`);
+        }
+
+        const errorMessage = error.message || error || "";
+        rejectFn({
+          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
+          errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
+        });
+      });
+
+    // Write data and finish request to external server.
+    httpRequest.write(postData);
+    httpRequest.end();
+  });
+}
+
+/**
  * Pipe through gzip if the contents is gzipped.
  *
  * @param {IncomingHttpHeaders} parsedResponseHeaders Headers object as key-value
@@ -438,6 +586,7 @@ function wrapForGzip(parsedResponseHeaders, httpResponse) {
 // Public functions.
 
 /**
+ * Load all orders and return an JS (JSON) object.
  *
  * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object
  * @return {Promise<IThuisbezorgdOrder[]|IResponseError>} The orders or an empty list
@@ -455,6 +604,38 @@ exports.getOrders = (configuration) => {
             }
             const reference = result.reference;
             getOrders(accessToken, reference, configuration)
+              .then(resolveFn)
+              .catch(rejectFn);
+          })
+          .catch(rejectFn);
+      })
+      .catch(rejectFn);
+  });
+};
+
+/**
+ * Update status of given order.
+ *
+ * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties 'username', 'password' and 'verbose' (optional)
+ * @param {number} orderId Thuisbezorgd order id
+ * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
+ * @param {number} [foodPreparationDuration] food_preparation_duration in minutes
+ * @param {number} [deliveryTimeDuration] delivery_time_duration in minutes
+ * @return {Promise} A promise that resolves with all the orders as JSON object
+ */
+exports.updateStatus = (configuration, orderId, status, foodPreparationDuration, deliveryTimeDuration) => {
+  return new Promise((resolveFn, rejectFn) => {
+    login(configuration)
+      .then(accessToken => {
+        // Call restaurant API, to receive the reference.
+        getRestaurant(accessToken, configuration)
+          .then(/** @param {{reference:string}} result */result => {
+            if (!result || !result.reference) {
+              rejectFn("Unable to receive restaurant reference, cannot update status.");
+              return;
+            }
+            const reference = result.reference;
+            updateStatus(accessToken, reference, orderId, status, foodPreparationDuration, deliveryTimeDuration, configuration.verbose)
               .then(resolveFn)
               .catch(rejectFn);
           })

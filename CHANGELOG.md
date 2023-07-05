@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.3.0 - July 5, 2023
+
+- Improvement: Added function to set the order status to "confirmed", "kitchen", "in_delivery" or "delivered"
+
 ### 2.2.3 - February 6, 2023
 
 - Improvement: In case of connection error SSLV3_ALERT_HANDSHAKE_FAILURE, return more specific error code "HTTP_ERROR_CONNECTION".
