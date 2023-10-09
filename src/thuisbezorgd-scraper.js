@@ -9,7 +9,8 @@ exports.updateStatus = updateStatus;
 /**
  * Load all orders and return an JS (JSON) object.
  *
- * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties 'username', 'password' and 'verbose' (optional)
+ * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties
+ * 'username', 'password' and 'verbose' (optional)
  * @return {Promise} A promise that resolves with all the orders as JSON object
  */
 function scrape(configuration) {
@@ -19,7 +20,8 @@ function scrape(configuration) {
 /**
  * Update status of given order.
  *
- * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties 'username', 'password' and 'verbose' (optional)
+ * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties
+ * 'username', 'password' and 'verbose' (optional)
  * @param {number} orderId Thuisbezorgd order id
  * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
  * @param {number} [foodPreparationDuration] food_preparation_duration in minutes

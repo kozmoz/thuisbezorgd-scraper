@@ -30,7 +30,7 @@ const STATUS_CONFIRMED = "confirmed";
 const STATUS_KITCHEN = "kitchen";
 const STATUS_IN_DELIVERY = "in_delivery";
 const STATUS_DELIVERED = "delivered";
-const STATUSES = [STATUS_CONFIRMED,STATUS_KITCHEN,STATUS_IN_DELIVERY,STATUS_DELIVERED];
+const STATUSES = [STATUS_CONFIRMED, STATUS_KITCHEN, STATUS_IN_DELIVERY, STATUS_DELIVERED];
 
 const DEFAULT_FOOD_PREPARATION_DURATION = 15;
 const DEFAULT_DELIVERY_TIME_DURATION = 30;
@@ -134,19 +134,22 @@ function login(configuration) {
         if (!isJson) {
           rejectFn({
             errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected a JSON response but received "${contentType}", cannot log in to Thuisbezorgd.nl`
+            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected a JSON response but received ` +
+              `"${contentType}", cannot log in to Thuisbezorgd.nl`
           });
           return;
         }
         if (!responseData) {
           rejectFn({
             errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected JSON content but received "${responseData}", cannot log in to Thuisbezorgd.nl`
+            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected JSON content but received ` +
+              `"${responseData}", cannot log in to Thuisbezorgd.nl`
           });
           return;
         }
         try {
-          const accessToken = JSON.parse(responseData)["access_token"];
+          // noinspection JSUnresolvedReference
+          const accessToken = JSON.parse(responseData).access_token;
           resolveFn(accessToken);
         } catch (e) {
           if (verbose) {
@@ -154,7 +157,8 @@ function login(configuration) {
           }
           rejectFn({
             errorCode: "PARSE_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected a JSON response but received "${responseData}", cannot log in to Thuisbezorgd.nl`
+            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected a JSON response but received ` +
+              `"${responseData}", cannot log in to Thuisbezorgd.nl`
           });
         }
       });
@@ -256,14 +260,16 @@ function getRestaurant(accessToken, configuration) {
         if (!isJson) {
           rejectFn({
             errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected a JSON response but received "${contentType}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Thuisbezorgd.nl API service failed. We expected a JSON response but received ` +
+              `"${contentType}", cannot access Thuisbezorgd.nl API`
           });
           return;
         }
         if (!responseData) {
           rejectFn({
             errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received "${responseData}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
+              `"${responseData}", cannot access Thuisbezorgd.nl API`
           });
           return;
         }
@@ -272,7 +278,8 @@ function getRestaurant(accessToken, configuration) {
         } catch (e) {
           rejectFn({
             errorCode: "PARSE_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received "${responseData}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
+              `"${responseData}", cannot access Thuisbezorgd.nl API`
           });
         }
       });
@@ -302,9 +309,9 @@ function getRestaurant(accessToken, configuration) {
  * @return {boolean} True in case it is a connection error
  */
 function isConnectionError(errorMessage) {
-  return errorMessage === "socket hang up"
-    || (errorMessage || "").indexOf("ECONNRESET") !== -1
-    || (errorMessage || "").indexOf("SSLV3_ALERT_HANDSHAKE_FAILURE") !== -1;
+  return errorMessage === "socket hang up" ||
+    (errorMessage || "").indexOf("ECONNRESET") !== -1 ||
+    (errorMessage || "").indexOf("SSLV3_ALERT_HANDSHAKE_FAILURE") !== -1;
 }
 
 /**
@@ -392,14 +399,16 @@ function getOrders(accessToken, reference, configuration) {
         if (!isJson) {
           rejectFn({
             errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected a JSON response but received "${contentType}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Thuisbezorgd.nl API service failed. We expected a JSON response but received ` +
+              `"${contentType}", cannot access Thuisbezorgd.nl API`
           });
           return;
         }
         if (!responseData) {
           rejectFn({
             errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received "${responseData}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
+              `"${responseData}", cannot access Thuisbezorgd.nl API`
           });
           return;
         }
@@ -408,7 +417,8 @@ function getOrders(accessToken, reference, configuration) {
         } catch (e) {
           rejectFn({
             errorCode: "PARSE_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received "${responseData}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
+              `"${responseData}", cannot access Thuisbezorgd.nl API`
           });
         }
       });
@@ -616,7 +626,8 @@ exports.getOrders = (configuration) => {
 /**
  * Update status of given order.
  *
- * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties 'username', 'password' and 'verbose' (optional)
+ * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object with the properties
+ *        'username', 'password' and 'verbose' (optional)
  * @param {number} orderId Thuisbezorgd order id
  * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
  * @param {number} [foodPreparationDuration] food_preparation_duration in minutes

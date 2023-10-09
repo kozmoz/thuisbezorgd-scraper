@@ -1,0 +1,9 @@
+{
+  "browser": true,
+  "esversion": 9,
+  "indent": 2,
+  "maxlen": 150,
+  "predef": [
+    "alert"
+  ]
+}
