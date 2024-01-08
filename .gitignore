@@ -140,7 +140,6 @@ Temporary Items
 documentation.txt
 test.sh
 
-orders-v1*.json
-orders-v2*.json
+orders*.json
 restaurant.json
 index.js

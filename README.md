@@ -1,22 +1,19 @@
-**Update October 2022**
 
-Apparently Thuisbezorgd.nl / Takeaway.com has written a new web application (and iOS app and Android app) 
-to show today's live orders. 
+Introduction
+============
 
-I completely rewrote this service from scratch, now using the Thuisbezorgd.nl web application's underlying API calls. 
-The way to receive the data is much cleaner now. Actually it's technically not an HTML scraper anymore. For historical 
-reasons I will keep the name anyway. 
+As of October 2022, Thuisbezorgd.nl / Takeaway.com has introduced a revitalized web application, 
+alongside the iOS and Android apps. These are designed to display live orders with enhanced efficiency.
 
-The only drawback is that the data format is not backwards compatible, hence the new version numbering. 
+Previously, the service relied heavily on HTML scraping, but I have entirely rewritten the service from the ground up. 
+Now, it taps directly into the Thuisbezorgd.nl web application's underlying API calls, significantly improving the 
+data fetching process.
 
+Though we've transitioned away from HTML scraping, the service retains its original name for historical continuity.
 
-**Update May 19, 2020**
-
-I'm not using the service of Thuisbezorgd.nl / Takeaway.com anymore, 
-so I'm not able to add new functionality to this scraper. 
-
-Probably it's better to use the official Takeaway.com REST API. 
-Please contact posapi@takeaway.com for details.
+However, it's important to note that due to significant changes in retrieving and presenting data, 
+**the format is not backward compatible**. This shift to enhance efficiency and user experience has also led us to 
+update our version numbering to reflect these considerable improvements.
 
 
 Thuisbezorgd-scraper
@@ -24,8 +21,8 @@ Thuisbezorgd-scraper
 
 ![npm package version](https://img.shields.io/npm/v/thuisbezorgd-scraper.svg)
 
-About
------
+Real-Time Order Fetching
+------------------------
 Thuisbezorgd-scraper scrapes the Thuisbezorgd.nl / Takeaway.com restaurant website to get all current orders. 
 The resulting list of orders is returned in JSON format. 
 
@@ -34,18 +31,31 @@ Intended for restaurant owners.
 Developed in collaboration with Sushi 81. Delivery and take-away restaurant of sushi and Poke Bowls. Located in Nijverdal, the Netherlands. 
 https://sushi81.nl   
 
-Install
--------
-You can either install it as local dependency to a project, or install it globally to be able to use it on the command line.
+Thuisbezorgd-scraper is a specialized software service designed to interact with the Thuisbezorgd.nl / 
+Takeaway.com online food ordering platform. Utilizing advanced web scraping techniques, it fetches the latest, 
+live order data from the restaurant website, outputting the result as a structured JSON file.
 
-To install <code>thuisbezorgd-scraper</code> globally, on the command line type the following:
+This tool holds significant potential for restaurant owners, enabling real-time tracking of current orders 
+to streamline and enhance their service.
+
+Proudly co-developed with Sushi 81, a renowned delivery and takeaway restaurant specializing in sushi and Poke bowls, 
+based in Nijverdal, the Netherlands. More about their delightful dishes at [Sushi 81 Website](https://sushi81.nl)
+
+
+Installation Guide
+------------------
+There are two ways you can install and use `thuisbezorgd-scraper`: as a local dependency within a specific project 
+or as a global dependency to be accessible from anywhere on your system via the command line.
+
+To install `thuisbezorgd-scraper` as a global module, use the following command:
 
     $ npm install -g thuisbezorgd-scraper
-        
-Once installed globally, you can run it from any location:
+
+After global installation, you can verify the installation and get a brief overview of available operations by 
+running the help command:
 
     $ thuisbezorgd-scraper --help
-        
+
 
 Usage Command Line
 ------------------
