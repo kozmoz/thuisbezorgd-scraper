@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.3.1 - January 8, 2024
+
+- Improvement: Error detection function + unit tests
+
 ### 2.3.0 - July 5, 2023
 
 - Improvement: Added function to set the order status to "confirmed", "kitchen", "in_delivery" or "delivered"

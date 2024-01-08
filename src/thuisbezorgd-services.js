@@ -303,15 +303,15 @@ function getRestaurant(accessToken, configuration) {
 }
 
 /**
- * Test if given error message looks like a connection error.
+ * Determines if the given error message indicates a connection error.
  *
- * @param errorMessage The error message from https.request() function
- * @return {boolean} True in case it is a connection error
+ * @param {string} errorMessage - The error message to check.
+ * @returns {boolean} - Returns true if the error message indicates a connection error, false otherwise.
  */
 function isConnectionError(errorMessage) {
-  return errorMessage === "socket hang up" ||
-    (errorMessage || "").indexOf("ECONNRESET") !== -1 ||
-    (errorMessage || "").indexOf("SSLV3_ALERT_HANDSHAKE_FAILURE") !== -1;
+  const CONNECTION_ERROR_MESSAGES = ["socket hang up", "ECONNRESET", "SSLV3_ALERT_HANDSHAKE_FAILURE"];
+  return CONNECTION_ERROR_MESSAGES.some(err => (errorMessage || "").includes(err)
+  );
 }
 
 /**
@@ -344,6 +344,8 @@ function getOrders(accessToken, reference, configuration) {
     // https://live-orders-api.takeaway.com/api/orders
     /** @type {module:http.RequestOptions} */
     const options = {
+      // An Agent is responsible for managing connection persistence and reuse for HTTP clients.
+      // False creates a new agent just for this one request
       agent: false,
       hostname: HOST,
       port: 443,
@@ -503,6 +505,8 @@ function updateStatus(accessToken, reference, orderId, status, foodPreparationDu
     // https://live-orders-api.takeaway.com/api/orders/6253787901/confirm-order
     /** @type {module:http.RequestOptions} */
     const options = {
+      // An Agent is responsible for managing connection persistence and reuse for HTTP clients.
+      // False creates a new agent just for this one request
       agent: false,
       hostname: HOST,
       port: 443,
@@ -601,7 +605,7 @@ function wrapForGzip(parsedResponseHeaders, httpResponse) {
  * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object
  * @return {Promise<IThuisbezorgdOrder[]|IResponseError>} The orders or an empty list
  */
-exports.getOrders = (configuration) => {
+exports.getOrders = configuration => {
   return new Promise((resolveFn, rejectFn) => {
     login(configuration)
       .then(accessToken => {
@@ -655,3 +659,6 @@ exports.updateStatus = (configuration, orderId, status, foodPreparationDuration,
       .catch(rejectFn);
   });
 };
+
+// For testing purposes.
+exports._isConnectionError = isConnectionError;
