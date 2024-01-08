@@ -1,21 +1,4 @@
 
-Introduction
-============
-
-As of October 2022, Thuisbezorgd.nl / Takeaway.com has introduced a revitalized web application, 
-alongside the iOS and Android apps. These are designed to display live orders with enhanced efficiency.
-
-Previously, the service relied heavily on HTML scraping, but I have entirely rewritten the service from the ground up. 
-Now, it taps directly into the Thuisbezorgd.nl web application's underlying API calls, significantly improving the 
-data fetching process.
-
-Though we've transitioned away from HTML scraping, the service retains its original name for historical continuity.
-
-However, it's important to note that due to significant changes in retrieving and presenting data, 
-**the format is not backward compatible**. This shift to enhance efficiency and user experience has also led us to 
-update our version numbering to reflect these considerable improvements.
-
-
 Thuisbezorgd-scraper
 ====================
 
@@ -23,16 +6,8 @@ Thuisbezorgd-scraper
 
 Real-Time Order Fetching
 ------------------------
-Thuisbezorgd-scraper scrapes the Thuisbezorgd.nl / Takeaway.com restaurant website to get all current orders. 
-The resulting list of orders is returned in JSON format. 
-
-Intended for restaurant owners.
-
-Developed in collaboration with Sushi 81. Delivery and take-away restaurant of sushi and Poke Bowls. Located in Nijverdal, the Netherlands. 
-https://sushi81.nl   
-
 Thuisbezorgd-scraper is a specialized software service designed to interact with the Thuisbezorgd.nl / 
-Takeaway.com online food ordering platform. Utilizing advanced web scraping techniques, it fetches the latest, 
+Takeaway.com online food ordering platform. Utilizing https calls, it fetches the latest, 
 live order data from the restaurant website, outputting the result as a structured JSON file.
 
 This tool holds significant potential for restaurant owners, enabling real-time tracking of current orders 
@@ -40,6 +15,23 @@ to streamline and enhance their service.
 
 Proudly co-developed with Sushi 81, a renowned delivery and takeaway restaurant specializing in sushi and Poke bowls, 
 based in Nijverdal, the Netherlands. More about their delightful dishes at [Sushi 81 Website](https://sushi81.nl)
+
+
+Major Update: Transition to API Calls with Breaking Changes
+-----------------------------------------------------------
+
+As of October 2022, Thuisbezorgd.nl / Takeaway.com has introduced a revitalized web application,
+alongside the iOS and Android apps. These are designed to display live orders with enhanced efficiency.
+
+Previously, the service relied heavily on HTML scraping, but I have entirely rewritten the service from the ground up.
+Now, it taps directly into the Thuisbezorgd.nl web application's underlying API calls, significantly improving the
+data fetching process.
+
+Though we've transitioned away from HTML scraping, the service retains its original name for historical continuity.
+
+However, it's important to note that due to significant changes in retrieving and presenting data,
+**the format is not backward compatible**. This shift to enhance efficiency and user experience has also led us to
+update our version numbering to reflect these considerable improvements. Upgraded from major version 1 to version 2.
 
 
 Installation Guide

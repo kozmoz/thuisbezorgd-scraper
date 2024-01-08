@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.3.2 - January 8, 2024
+
+- Improvement: Documentation
+
 ### 2.3.1 - January 8, 2024
 
 - Improvement: Error detection function + unit tests
