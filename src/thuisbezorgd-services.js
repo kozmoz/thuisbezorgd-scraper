@@ -9,10 +9,9 @@ const packageJson = require(path.join(__dirname, "..", "package.json"));
 // User agent is based on package name and version and includes the email address.
 /** @namespace packageJson.name */
 /** @namespace packageJson.version */
-// noinspection JSUnusedLocalSymbols
 /** @namespace packageJson.email */
-const USER_AGENT_STRING_CUSTOM = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
-const USER_AGENT_STRING = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15";
+const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
+// const USER_AGENT_STRING = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15";
 
 const HTTP_METHOD_OPTIONS = "OPTIONS";
 const HTTP_METHOD_POST = "POST";
@@ -291,13 +290,16 @@ function updateStatus(accessToken, restaurantId, orderId, status, foodPreparatio
 /**
  * Pipe through gzip if the contents is gzipped.
  *
- * @param {IncomingHttpHeaders} parsedResponseHeaders Headers object as key-value
  * @param {module:http.ServerResponse} httpResponse HTTP response
+ * @param {boolean} verbose
  * @returns {module:http.ServerResponse | module:zlib.Gunzip} Piped response
  */
-function wrapForGzip(parsedResponseHeaders, httpResponse) {
-  const isGzipped = parsedResponseHeaders["content-encoding"] === "gzip";
+function wrapForGzip(httpResponse, verbose = false) {
+  const isGzipped = httpResponse.headers["content-encoding"] === "gzip";
   if (isGzipped) {
+    if (verbose) {
+      console.log("Response is gzip-encoded.");
+    }
     // https://stackoverflow.com/questions/29757380/nodejs-returning-garbage-json
     const gzip = zlib.createGunzip();
     httpResponse.pipe(gzip);
@@ -395,18 +397,10 @@ function sendHttpRequest(method, nextMethod, path, restaurantId, accessToken, po
     rejectUnauthorized: false
   };
 
-  if (options) {
-    console.log('==== request: ' + JSON.stringify(options, null, 2));
-    resolveFn("");
-    return;
-  }
-
   const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
 
-    // noinspection JSUnresolvedVariable
-    /** @type {IncomingHttpHeaders} */
-    const parsedResponseHeaders = httpResponse.headers;
-    httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
+    const statusCode = httpResponse.statusCode;
+    httpResponse = wrapForGzip(httpResponse, verbose);
 
     // Receive data and add to buffer.
     const chunks = [];
@@ -423,8 +417,7 @@ function sendHttpRequest(method, nextMethod, path, restaurantId, accessToken, po
         console.log(`${DEBUG_PREFIX}${method} ${path} request response: "${responseData}"`);
       }
 
-      const statusCode = httpResponse.statusCode;
-      if (statusCode !== 200) {
+      if (statusCode < 200 || statusCode >= 300) {
         rejectFn({
           errorCode: "HTTP_ERROR",
           errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access ${method} ${path}`,

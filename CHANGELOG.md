@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### 2.4.0 - January 19, 2024
+
+- Improvement: Code simplified and duplicates removed.
+
 ### 2.3.2 - January 8, 2024
 
 - Improvement: Documentation
