@@ -1,6 +1,4 @@
 // Path utility class.
-// noinspection DuplicatedCode
-
 const path = require("path");
 const https = require("https");
 const zlib = require("zlib");
@@ -11,11 +9,16 @@ const packageJson = require(path.join(__dirname, "..", "package.json"));
 // User agent is based on package name and version and includes the email address.
 /** @namespace packageJson.name */
 /** @namespace packageJson.version */
+// noinspection JSUnusedLocalSymbols
 /** @namespace packageJson.email */
-const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
+const USER_AGENT_STRING_CUSTOM = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
+const USER_AGENT_STRING = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15";
 
+const HTTP_METHOD_OPTIONS = "OPTIONS";
 const HTTP_METHOD_POST = "POST";
+const HTTP_METHOD_PATCH = "PATCH";
 const HTTP_METHOD_GET = "GET";
+const HTTP_METHODS = [HTTP_METHOD_OPTIONS, HTTP_METHOD_POST, HTTP_METHOD_PATCH, HTTP_METHOD_GET];
 
 const DEBUG_PREFIX = "\x1B[36mDEBUG\x1B[0m: ";
 
@@ -25,6 +28,7 @@ const THUISBEZORGD_PATH_RESTAURANT = "/api/restaurant";
 const THUISBEZORGD_PATH_ORDERS = "/api/orders";
 const THUISBEZORGD_PATH_ORDER = THUISBEZORGD_PATH_ORDERS + "/{id}";
 const THUISBEZORGD_PATH_CONFIRM_ORDER = THUISBEZORGD_PATH_ORDER + "/confirm-order";
+const THUISBEZORGD_PATH_RECEIVED = THUISBEZORGD_PATH_ORDER + "/mark-as-received";
 
 const STATUS_CONFIRMED = "confirmed";
 const STATUS_KITCHEN = "kitchen";
@@ -35,20 +39,19 @@ const STATUSES = [STATUS_CONFIRMED, STATUS_KITCHEN, STATUS_IN_DELIVERY, STATUS_D
 const DEFAULT_FOOD_PREPARATION_DURATION = 15;
 const DEFAULT_DELIVERY_TIME_DURATION = 30;
 
+// General headers.
 // noinspection SpellCheckingInspection
 const HTTP_HEADERS = {
-  // 'User-Agent': 'liveorders/2 CFNetwork/1390 Darwin/22.0.0',
-  Host: HOST,
-  "User-Agent": USER_AGENT_STRING,
-  "Content-Type": "application/json",
-  Accept: "application/json, text/plain, */*",
-  "Accept-Encoding": "gzip",
-  "Accept-Language": "nl-NL,nl;q=0.9",
-  "Cache-Control": "no-cache",
-  Pragma: "no-cache",
-  Origin: "https://live-orders.takeaway.com",
-  Referer: "https://live-orders.takeaway.com",
-  "X-Requested-With": "XMLHttpRequest"
+  host: HOST,
+  accept: "application/json, text/plain, */*",
+  "sec-fetch-site": "same-site",
+  "accept-language": "nl-NL,nl;q=0.9",
+  "sec-fetch-mode": "cors",
+  "accept-encoding": "gzip",
+  origin: "https://live-orders.takeaway.com",
+  "user-agent": USER_AGENT_STRING,
+  referer: "https://live-orders.takeaway.com/",
+  "sec-fetch-dest": "empty"
 };
 
 /**
@@ -78,107 +81,17 @@ function login(configuration) {
       password: thuisbezorgdPassword
     });
 
-    /** @type {module:http.RequestOptions} */
-    const options = {
-      agent: false,
-      hostname: HOST,
-      port: 443,
-      path: THUISBEZORGD_PATH_LOGIN,
-      method: "POST",
-      headers: {
-        ...HTTP_HEADERS,
-        "Content-Length": Buffer.byteLength(postData)
-      },
-      rejectUnauthorized: false
-    };
-
-    if (verbose) {
-      console.log(`${DEBUG_PREFIX}Login POST request to receive accessToken`);
-    }
-
-    const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
-
-      const statusCode = httpResponse.statusCode;
-      // noinspection JSUnresolvedVariable
-      /** @type {IncomingHttpHeaders} */
-      const parsedResponseHeaders = httpResponse.headers;
-
-      const contentType = parsedResponseHeaders["content-type"] || "Unknown";
-      const isJson = contentType.indexOf("application/json") === 0;
-
-      httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
-
-      // Receive data and add to buffer.
-      const chunks = [];
-      httpResponse.on("data", chunk => chunks.push(chunk));
-
-      /**
-       * End of response reached.
-       */
-      httpResponse.on("end", () => {
-
-        const responseData = Buffer.concat(chunks).toString();
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Login response: "${responseData}"`);
-        }
-
-        if (statusCode !== 200) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed with status code ${statusCode}, cannot log in to Thuisbezorgd.nl`,
-            httpStatusCode: statusCode
-          });
-          return;
-        }
-        if (!isJson) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected a JSON response but received ` +
-              `"${contentType}", cannot log in to Thuisbezorgd.nl`
-          });
-          return;
-        }
-        if (!responseData) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected JSON content but received ` +
-              `"${responseData}", cannot log in to Thuisbezorgd.nl`
-          });
-          return;
-        }
-        try {
-          // noinspection JSUnresolvedReference
-          const accessToken = JSON.parse(responseData).access_token;
-          resolveFn(accessToken);
-        } catch (e) {
-          if (verbose) {
-            console.log(`${DEBUG_PREFIX}Login error parsing response: "${e}"`);
-          }
-          rejectFn({
-            errorCode: "PARSE_ERROR",
-            errorMessage: `Thuisbezorgd.nl SSO service failed. We expected a JSON response but received ` +
-              `"${responseData}", cannot log in to Thuisbezorgd.nl`
-          });
-        }
-      });
-    })
-      .on("error", (error) => {
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Login request error: "${error}"`);
-        }
-
-        const errorMessage = error.message || error;
+    // https://live-orders-api.takeaway.com/api/restaurant
+    sendHttpRequest(HTTP_METHOD_POST, "", THUISBEZORGD_PATH_LOGIN, 0, "", postData, verbose, (responseData => {
+      try {
+        resolveFn(JSON.parse(responseData)['access_token']);
+      } catch (e) {
         rejectFn({
-          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
-          errorMessage: `Thuisbezorgd.nl SSO service request failed. "${errorMessage}", cannot log in to Thuisbezorgd.nl`
+          errorCode: "PARSE_ERROR",
+          errorMessage: `Could not parse the response: ${e}`
         });
-      });
-
-    // Write data and finish request to external server.
-    httpRequest.write(postData);
-    httpRequest.end();
+      }
+    }), rejectFn);
   });
 }
 
@@ -204,125 +117,28 @@ function getRestaurant(accessToken, configuration) {
     }
 
     // https://live-orders-api.takeaway.com/api/restaurant
-    /** @type {module:http.RequestOptions} */
-    const options = {
-      agent: false,
-      hostname: HOST,
-      port: 443,
-      path: THUISBEZORGD_PATH_RESTAURANT,
-      method: "GET",
-      headers: {
-        ...HTTP_HEADERS,
-        "Authorization": `Bearer ${accessToken}`
-      },
-      rejectUnauthorized: false
-    };
-
-    if (verbose) {
-      console.log(`${DEBUG_PREFIX}Restaurant GET request to receive restaurant info`);
-    }
-
-    const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
-
-      const statusCode = httpResponse.statusCode;
-      // noinspection JSUnresolvedVariable
-      /** @type {IncomingHttpHeaders} */
-      const parsedResponseHeaders = httpResponse.headers;
-
-      const contentType = parsedResponseHeaders["content-type"] || "Unknown";
-      const isJson = contentType.indexOf("application/json") === 0;
-
-      httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
-
-      // Receive data and add to buffer.
-      const chunks = [];
-      httpResponse.on("data", chunk => chunks.push(chunk));
-
-      /**
-       * End of response reached.
-       */
-      httpResponse.on("end", () => {
-
-        const responseData = Buffer.concat(chunks).toString();
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Restaurant request response: "${responseData}"`);
-        }
-
-        if (statusCode !== 200) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access Thuisbezorgd.nl API`,
-            httpStatusCode: statusCode
-          });
-          return;
-        }
-        if (!isJson) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected a JSON response but received ` +
-              `"${contentType}", cannot access Thuisbezorgd.nl API`
-          });
-          return;
-        }
-        if (!responseData) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
-              `"${responseData}", cannot access Thuisbezorgd.nl API`
-          });
-          return;
-        }
-        try {
-          resolveFn(JSON.parse(responseData));
-        } catch (e) {
-          rejectFn({
-            errorCode: "PARSE_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
-              `"${responseData}", cannot access Thuisbezorgd.nl API`
-          });
-        }
-      });
-    })
-      .on("error", (error) => {
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Restaurant request error: "${error}"`);
-        }
-
-        const errorMessage = error.message || error;
+    sendHttpRequest(HTTP_METHOD_GET, "", THUISBEZORGD_PATH_RESTAURANT, 0, accessToken, "", verbose, (responseData => {
+      try {
+        resolveFn(JSON.parse(responseData));
+      } catch (e) {
         rejectFn({
-          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
-          errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
+          errorCode: "PARSE_ERROR",
+          errorMessage: `Could not parse the response: ${e}`
         });
-      });
-
-    // Finish request to external server.
-    httpRequest.end();
+      }
+    }), rejectFn);
   });
-}
-
-/**
- * Determines if the given error message indicates a connection error.
- *
- * @param {string} errorMessage - The error message to check.
- * @returns {boolean} - Returns true if the error message indicates a connection error, false otherwise.
- */
-function isConnectionError(errorMessage) {
-  const CONNECTION_ERROR_MESSAGES = ["socket hang up", "ECONNRESET", "SSLV3_ALERT_HANDSHAKE_FAILURE"];
-  return CONNECTION_ERROR_MESSAGES.some(err => (errorMessage || "").includes(err)
-  );
 }
 
 /**
  * Get orders.
  *
  * @param {string} accessToken Bearer access token
- * @param {string} reference Restaurant reference code
+ * @param {number} restaurantId Restaurant reference code
  * @param {{username:string,password:string,verbose?:boolean}} configuration Configuration object
  * @return {Promise<IThuisbezorgdOrder[]|IResponseError>} A promise that resolves
  */
-function getOrders(accessToken, reference, configuration) {
+function getOrders(accessToken, restaurantId, configuration) {
   const verbose = configuration.verbose;
   return new Promise((resolveFn, rejectFn) => {
 
@@ -333,7 +149,7 @@ function getOrders(accessToken, reference, configuration) {
       });
       return;
     }
-    if (!reference) {
+    if (!restaurantId) {
       rejectFn({
         errorCode: "NO_CREDENTIALS",
         errorMessage: "No restaurant reference, cannot access Thuisbezorgd.nl API"
@@ -341,105 +157,20 @@ function getOrders(accessToken, reference, configuration) {
       return;
     }
 
-    // https://live-orders-api.takeaway.com/api/orders
-    /** @type {module:http.RequestOptions} */
-    const options = {
-      // An Agent is responsible for managing connection persistence and reuse for HTTP clients.
-      // False creates a new agent just for this one request
-      agent: false,
-      hostname: HOST,
-      port: 443,
-      path: THUISBEZORGD_PATH_ORDERS,
-      method: HTTP_METHOD_GET,
-      headers: {
-        ...HTTP_HEADERS,
-        "Authorization": `Bearer ${accessToken}`,
-        "X-restaurant-id": reference
-      },
-      rejectUnauthorized: false
-    };
-
-    if (verbose) {
-      console.log(`${DEBUG_PREFIX}Orders GET request to receive orders`);
-    }
-
-    const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
-
-      const statusCode = httpResponse.statusCode;
-      // noinspection JSUnresolvedVariable
-      /** @type {IncomingHttpHeaders} */
-      const parsedResponseHeaders = httpResponse.headers;
-
-      const contentType = parsedResponseHeaders["content-type"] || "Unknown";
-      const isJson = contentType.indexOf("application/json") === 0;
-
-      httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
-
-      // Receive data and add to buffer.
-      const chunks = [];
-      httpResponse.on("data", chunk => chunks.push(chunk));
-
-      /**
-       * End of response reached.
-       */
-      httpResponse.on("end", () => {
-
-        const responseData = Buffer.concat(chunks).toString();
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Orders request response: "${responseData}"`);
-        }
-
-        if (statusCode !== 200) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access Thuisbezorgd.nl API`,
-            httpStatusCode: statusCode
-          });
-          return;
-        }
-        if (!isJson) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected a JSON response but received ` +
-              `"${contentType}", cannot access Thuisbezorgd.nl API`
-          });
-          return;
-        }
-        if (!responseData) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
-              `"${responseData}", cannot access Thuisbezorgd.nl API`
-          });
-          return;
-        }
+    // Always two requests, one OPTIONS and the POST request
+    sendHttpRequest(HTTP_METHOD_OPTIONS, HTTP_METHOD_GET, THUISBEZORGD_PATH_ORDERS, restaurantId, accessToken, "", verbose, () => {
+      // Options was successful, now the POST
+      sendHttpRequest(HTTP_METHOD_GET, "", THUISBEZORGD_PATH_ORDERS, restaurantId, accessToken, "", verbose, (responseData => {
         try {
           resolveFn(JSON.parse(responseData));
         } catch (e) {
           rejectFn({
             errorCode: "PARSE_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed. We expected JSON content but received ` +
-              `"${responseData}", cannot access Thuisbezorgd.nl API`
+            errorMessage: `Could not parse the response: ${e}`
           });
         }
-      });
-    })
-      .on("error", (error) => {
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Orders request error: "${error}"`);
-        }
-
-        const errorMessage = error.message || error || "";
-        rejectFn({
-          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
-          errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
-        });
-      });
-
-    // Finish request to external server.
-    httpRequest.end();
+      }), rejectFn);
+    }, rejectFn);
   });
 }
 
@@ -447,15 +178,12 @@ function getOrders(accessToken, reference, configuration) {
  * Update the order status.
  *
  * @param {string} accessToken Bearer access token
- * @param {string} reference Restaurant reference code
+ * @param {number} restaurantId Restaurant reference code
  * @param {number} orderId Thuisbezorgd order id
- * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
- * @param {number} [foodPreparationDuration] food_preparation_duration in minutes, defaults to 15
- * @param {number} [deliveryTimeDuration] delivery_time_duration in minutes, defaults to 30
  * @param {boolean} [verbose] If true, log details. False by default (optional parameter)
  * @return {Promise<void|IResponseError>} A promise that resolves
  */
-function updateStatus(accessToken, reference, orderId, status, foodPreparationDuration, deliveryTimeDuration, verbose = false) {
+function markAsReceived(accessToken, restaurantId, orderId, verbose = false) {
   return new Promise((resolveFn, rejectFn) => {
 
     if (!accessToken) {
@@ -465,7 +193,54 @@ function updateStatus(accessToken, reference, orderId, status, foodPreparationDu
       });
       return;
     }
-    if (!reference) {
+    if (!restaurantId) {
+      rejectFn({
+        errorCode: "NO_CREDENTIALS",
+        errorMessage: "No restaurant reference, cannot access Thuisbezorgd.nl API"
+      });
+      return;
+    }
+    if (!orderId) {
+      rejectFn({
+        errorCode: "NO_ORDER_ID",
+        errorMessage: "No order id, cannot update the order status"
+      });
+      return;
+    }
+
+    // https://live-orders-api.takeaway.com/api/orders/9775233291/mark-as-received
+    const path = THUISBEZORGD_PATH_RECEIVED.replace("{id}", `${orderId}`);
+    // Always two requests, one OPTIONS and the POST request
+    sendHttpRequest(HTTP_METHOD_OPTIONS, HTTP_METHOD_POST, path, restaurantId, accessToken, "", verbose, () => {
+      // Options was successful, now the POST
+      sendHttpRequest(HTTP_METHOD_POST, "", path, restaurantId, accessToken, "", verbose, resolveFn, rejectFn);
+    }, rejectFn);
+  });
+}
+
+/**
+ * Update the order status.
+ *
+ * @param {string} accessToken Bearer access token
+ * @param {number} restaurantId Restaurant reference code
+ * @param {number} orderId Thuisbezorgd order id
+ * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
+ * @param {number} [foodPreparationDuration] food_preparation_duration in minutes, defaults to 15
+ * @param {number} [deliveryTimeDuration] delivery_time_duration in minutes, defaults to 30
+ * @param {boolean} [verbose] If true, log details. False by default (optional parameter)
+ * @return {Promise<void|IResponseError>} A promise that resolves
+ */
+function updateStatus(accessToken, restaurantId, orderId, status, foodPreparationDuration, deliveryTimeDuration, verbose = false) {
+  return new Promise((resolveFn, rejectFn) => {
+
+    if (!accessToken) {
+      rejectFn({
+        errorCode: "NO_CREDENTIALS",
+        errorMessage: "No access token, cannot access Thuisbezorgd.nl API"
+      });
+      return;
+    }
+    if (!restaurantId) {
       rejectFn({
         errorCode: "NO_CREDENTIALS",
         errorMessage: "No restaurant reference, cannot access Thuisbezorgd.nl API"
@@ -489,93 +264,27 @@ function updateStatus(accessToken, reference, orderId, status, foodPreparationDu
 
     let path;
     let postData;
+    let method;
 
     // Confirm action or only a status update.
     if (status === STATUS_CONFIRMED) {
       path = THUISBEZORGD_PATH_CONFIRM_ORDER.replace("{id}", `${orderId}`);
+      method = HTTP_METHOD_POST;
       postData = JSON.stringify({
         food_preparation_duration: foodPreparationDuration || DEFAULT_FOOD_PREPARATION_DURATION,
         delivery_time_duration: deliveryTimeDuration || DEFAULT_DELIVERY_TIME_DURATION
       });
     } else {
       path = THUISBEZORGD_PATH_ORDER.replace("{id}", `${orderId}`);
+      method = HTTP_METHOD_PATCH;
       postData = JSON.stringify({status});
     }
 
-    // https://live-orders-api.takeaway.com/api/orders/6253787901/confirm-order
-    /** @type {module:http.RequestOptions} */
-    const options = {
-      // An Agent is responsible for managing connection persistence and reuse for HTTP clients.
-      // False creates a new agent just for this one request
-      agent: false,
-      hostname: HOST,
-      port: 443,
-      path,
-      method: HTTP_METHOD_POST,
-      headers: {
-        ...HTTP_HEADERS,
-        "Content-Length": Buffer.byteLength(postData),
-        "Authorization": `Bearer ${accessToken}`,
-        "X-restaurant-id": reference
-      },
-      rejectUnauthorized: false
-    };
-
-    if (verbose) {
-      console.log(`${DEBUG_PREFIX}POST status "${status}" request update the order status`);
-    }
-
-    const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
-
-      // noinspection JSUnresolvedVariable
-      /** @type {IncomingHttpHeaders} */
-      const parsedResponseHeaders = httpResponse.headers;
-      httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
-
-      // Receive data and add to buffer.
-      const chunks = [];
-      httpResponse.on("data", chunk => chunks.push(chunk));
-
-      /**
-       * End of response reached.
-       */
-      httpResponse.on("end", () => {
-
-        const responseData = Buffer.concat(chunks).toString();
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Confirm or status request response: "${responseData}"`);
-        }
-
-        const statusCode = httpResponse.statusCode;
-        if (statusCode !== 200) {
-          rejectFn({
-            errorCode: "HTTP_ERROR",
-            errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access Thuisbezorgd.nl API`,
-            httpStatusCode: statusCode
-          });
-          return;
-        }
-        // Status code 200, so successful.
-        resolveFn();
-      });
-    })
-      .on("error", (error) => {
-
-        if (verbose) {
-          console.log(`${DEBUG_PREFIX}Orders request error: "${error}"`);
-        }
-
-        const errorMessage = error.message || error || "";
-        rejectFn({
-          errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
-          errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access Thuisbezorgd.nl API`
-        });
-      });
-
-    // Write data and finish request to external server.
-    httpRequest.write(postData);
-    httpRequest.end();
+    // Always two requests, one OPTIONS and the POST request
+    sendHttpRequest(HTTP_METHOD_OPTIONS, method, path, restaurantId, accessToken, "", verbose, () => {
+      // Options was successful, now the POST
+      sendHttpRequest(method, "", path, restaurantId, accessToken, postData, verbose, resolveFn, rejectFn);
+    }, rejectFn);
   });
 }
 
@@ -597,6 +306,166 @@ function wrapForGzip(parsedResponseHeaders, httpResponse) {
   return httpResponse;
 }
 
+/**
+ * Sends an HTTP request to the specified path using the provided method.
+ *
+ * @param {string} method - The HTTP method to use for the request
+ * @param {string} nextMethod - The HTTP method to use for the next request (only used in case of OPTIONS
+ * @param {string} path - The URL path for the request, starting with /
+ * @param {number} restaurantId - The Thuisbezorgd ID of the restaurant
+ * @param {string} accessToken - The access token for authentication (Bearer)
+ * @param {string} postData - The data to be sent in the request body, or an empty string
+ * @param {boolean} verbose - Determines whether to log verbose information
+ * @param {Function} resolveFn - The function to call if the request is resolved
+ * @param {Function} rejectFn - The function to call if the request is rejected
+ * @return {void}
+ */
+function sendHttpRequest(method, nextMethod, path, restaurantId, accessToken, postData, verbose, resolveFn, rejectFn) {
+
+  if (verbose) {
+    console.log(`${DEBUG_PREFIX}${method} request to ${path}`);
+  }
+
+  if (!HTTP_METHODS.includes(method)) {
+    rejectFn({
+      errorCode: "INVALID_HTTP_METHOD",
+      errorMessage: `The requested HTTP method is not supported "${method}", should be one of ${HTTP_METHODS.join(",")}`
+    });
+    return;
+  }
+  if (method === HTTP_METHOD_OPTIONS && !HTTP_METHODS.includes(nextMethod)) {
+    rejectFn({
+      errorCode: "INVALID_HTTP_METHOD",
+      errorMessage: `The requested HTTP nextMethod is required "${nextMethod}", should be one of ${HTTP_METHODS.join(",")}`
+    });
+    return;
+  }
+  if (path !== THUISBEZORGD_PATH_LOGIN && path !== THUISBEZORGD_PATH_RESTAURANT && !restaurantId) {
+    rejectFn({
+      errorCode: "RESTAURANT_ID_REQUIRED",
+      errorMessage: "The restaurantId is required"
+    });
+    return;
+  }
+  if (path !== THUISBEZORGD_PATH_LOGIN && !accessToken) {
+    rejectFn({
+      errorCode: "ACCESS_TOKEN_REQUIRED",
+      errorMessage: "The accessToken is required"
+    });
+  }
+
+  const headers = {
+    ...HTTP_HEADERS
+  };
+
+  if (method === HTTP_METHOD_OPTIONS) {
+    headers["accept"] = "*/*";
+    headers["access-control-request-method"] = nextMethod;
+    // Actually "content-type" is not in the "mark-as-received"-call.
+    headers["access-control-request-headers"] = "authorization,content-type,x-requested-with" + (restaurantId ? ",x-restaurant-id" : "");
+    headers["content-length"] = "0";
+  }
+  if (method === HTTP_METHOD_POST || method === HTTP_METHOD_PATCH || method === HTTP_METHOD_GET) {
+    if (accessToken) {
+      headers["authorization"] = `Bearer ${accessToken}`;
+    }
+    if (restaurantId) {
+      headers["x-restaurant-id"] = `${restaurantId}`;
+    }
+    headers["x-requested-with"] = "XMLHttpRequest";
+  }
+  if (method === HTTP_METHOD_POST || method === HTTP_METHOD_PATCH) {
+    const byteLength = Buffer.byteLength(postData);
+    if (byteLength) {
+      headers["content-type"] = "application/json";
+    }
+    headers["content-length"] = `${byteLength}`;
+  }
+
+  /** @type {module:http.RequestOptions} */
+  const options = {
+    // An Agent is responsible for managing connection persistence and reuse for HTTP clients.
+    // False creates a new agent just for this one request
+    agent: false,
+    hostname: HOST,
+    port: 443,
+    path,
+    method,
+    headers,
+    rejectUnauthorized: false
+  };
+
+  if (options) {
+    console.log('==== request: ' + JSON.stringify(options, null, 2));
+    resolveFn("");
+    return;
+  }
+
+  const httpRequest = https.request(options, /** @param {module:http.ServerResponse} httpResponse */(httpResponse) => {
+
+    // noinspection JSUnresolvedVariable
+    /** @type {IncomingHttpHeaders} */
+    const parsedResponseHeaders = httpResponse.headers;
+    httpResponse = wrapForGzip(parsedResponseHeaders, httpResponse);
+
+    // Receive data and add to buffer.
+    const chunks = [];
+    httpResponse.on("data", chunk => chunks.push(chunk));
+
+    /**
+     * End of response reached.
+     */
+    httpResponse.on("end", () => {
+
+      const responseData = Buffer.concat(chunks).toString();
+
+      if (verbose) {
+        console.log(`${DEBUG_PREFIX}${method} ${path} request response: "${responseData}"`);
+      }
+
+      const statusCode = httpResponse.statusCode;
+      if (statusCode !== 200) {
+        rejectFn({
+          errorCode: "HTTP_ERROR",
+          errorMessage: `Thuisbezorgd.nl API service failed with status code ${statusCode}, cannot access ${method} ${path}`,
+          httpStatusCode: statusCode
+        });
+        return;
+      }
+      // Status code 200, so successful.
+      resolveFn(responseData);
+    });
+  })
+    .on("error", (error) => {
+
+      if (verbose) {
+        console.log(`${DEBUG_PREFIX}${method} ${path} request error: "${error}"`);
+      }
+
+      const errorMessage = error.message || error || "";
+      rejectFn({
+        errorCode: isConnectionError(errorMessage) ? "HTTP_ERROR_CONNECTION" : "HTTP_ERROR",
+        errorMessage: `Thuisbezorgd.nl API service request failed. "${errorMessage}", cannot access ${method} ${path}`
+      });
+    });
+
+  // Write data and finish request to external server.
+  httpRequest.write(postData);
+  httpRequest.end();
+}
+
+/**
+ * Determines if the given error message indicates a connection error.
+ *
+ * @param {string} errorMessage - The error message to check.
+ * @returns {boolean} - Returns true if the error message indicates a connection error, false otherwise.
+ */
+function isConnectionError(errorMessage) {
+  const CONNECTION_ERROR_MESSAGES = ["socket hang up", "ECONNRESET", "SSLV3_ALERT_HANDSHAKE_FAILURE"];
+  return CONNECTION_ERROR_MESSAGES.some(err => (errorMessage || "").includes(err)
+  );
+}
+
 // Public functions.
 
 /**
@@ -616,8 +485,8 @@ exports.getOrders = configuration => {
               rejectFn("Unable to receive restaurant reference, cannot get orders.");
               return;
             }
-            const reference = result.reference;
-            getOrders(accessToken, reference, configuration)
+            const restaurantId = +result.reference;
+            getOrders(accessToken, restaurantId, configuration)
               .then(resolveFn)
               .catch(rejectFn);
           })
@@ -649,9 +518,19 @@ exports.updateStatus = (configuration, orderId, status, foodPreparationDuration,
               rejectFn("Unable to receive restaurant reference, cannot update status.");
               return;
             }
-            const reference = result.reference;
-            updateStatus(accessToken, reference, orderId, status, foodPreparationDuration, deliveryTimeDuration, configuration.verbose)
-              .then(resolveFn)
+            const restaurantId = +result.reference;
+
+            // Do we have to call "markAsReceived" first?
+            let firstAction = Promise.resolve();
+            if (status === STATUS_CONFIRMED) {
+              firstAction = markAsReceived(accessToken, restaurantId, orderId, configuration.verbose);
+            }
+            firstAction
+              .then(() => {
+                updateStatus(accessToken, restaurantId, orderId, status, foodPreparationDuration, deliveryTimeDuration, configuration.verbose)
+                  .then(resolveFn)
+                  .catch(rejectFn);
+              })
               .catch(rejectFn);
           })
           .catch(rejectFn);
@@ -662,3 +541,4 @@ exports.updateStatus = (configuration, orderId, status, foodPreparationDuration,
 
 // For testing purposes.
 exports._isConnectionError = isConnectionError;
+exports._updateStatus = updateStatus;

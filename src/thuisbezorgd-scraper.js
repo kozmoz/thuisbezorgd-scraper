@@ -26,7 +26,7 @@ function scrape(configuration) {
  * @param {"confirmed"|"kitchen"|"in_delivery"|"delivered"} status New status
  * @param {number} [foodPreparationDuration] food_preparation_duration in minutes
  * @param {number} [deliveryTimeDuration] delivery_time_duration in minutes
- * @return {Promise} A promise that resolves with all the orders as JSON object
+ * @return {Promise} A promise that resolves or rejects with an error
  */
 function updateStatus(configuration, orderId, status, foodPreparationDuration, deliveryTimeDuration) {
   return thuisbezorgdService.updateStatus(configuration, orderId, status, foodPreparationDuration, deliveryTimeDuration);
