@@ -11,7 +11,8 @@ const packageJson = require(path.join(__dirname, "..", "package.json"));
 /** @namespace packageJson.version */
 /** @namespace packageJson.email */
 const USER_AGENT_STRING = `${packageJson.name}/${packageJson.version} (${packageJson.email})`;
-// const USER_AGENT_STRING = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15";
+// const USER_AGENT_STRING = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15
+//     (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15";
 
 const HTTP_METHOD_OPTIONS = "OPTIONS";
 const HTTP_METHOD_POST = "POST";
@@ -83,7 +84,8 @@ function login(configuration) {
     // https://live-orders-api.takeaway.com/api/restaurant
     sendHttpRequest(HTTP_METHOD_POST, "", THUISBEZORGD_PATH_LOGIN, 0, "", postData, verbose, (responseData => {
       try {
-        resolveFn(JSON.parse(responseData)['access_token']);
+        // noinspection JSUnresolvedReference
+        resolveFn(JSON.parse(responseData).access_token);
       } catch (e) {
         rejectFn({
           errorCode: "PARSE_ERROR",
@@ -361,7 +363,7 @@ function sendHttpRequest(method, nextMethod, path, restaurantId, accessToken, po
   };
 
   if (method === HTTP_METHOD_OPTIONS) {
-    headers["accept"] = "*/*";
+    headers.accept = "*/*";
     headers["access-control-request-method"] = nextMethod;
     // Actually "content-type" is not in the "mark-as-received"-call.
     headers["access-control-request-headers"] = "authorization,content-type,x-requested-with" + (restaurantId ? ",x-restaurant-id" : "");
@@ -369,7 +371,7 @@ function sendHttpRequest(method, nextMethod, path, restaurantId, accessToken, po
   }
   if (method === HTTP_METHOD_POST || method === HTTP_METHOD_PATCH || method === HTTP_METHOD_GET) {
     if (accessToken) {
-      headers["authorization"] = `Bearer ${accessToken}`;
+      headers.authorization = `Bearer ${accessToken}`;
     }
     if (restaurantId) {
       headers["x-restaurant-id"] = `${restaurantId}`;
