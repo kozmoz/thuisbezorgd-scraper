@@ -2,6 +2,13 @@
 Thuisbezorgd-scraper
 ====================
 
+Update September 11 2024
+------------------------
+As of this Monday, authentication endpoints for Thuisbezorgd have been updated. 
+**Consequently, logging in and retrieving data is no longer possible with this library.** 
+
+
+
 ![npm package version](https://img.shields.io/npm/v/thuisbezorgd-scraper.svg)
 
 Real-Time Order Fetching

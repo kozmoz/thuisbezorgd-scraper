@@ -1,5 +1,9 @@
 # Changes to thuisbezorgd-scraper
 
+### September 11, 2024
+
+- **This library is no longer functional due to changes in Thuisbezorgd's authorization mechanisms.**
+
 ### 2.4.0 - January 19, 2024
 
 - Improvement: Code simplified and duplicates removed.

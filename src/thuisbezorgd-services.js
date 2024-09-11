@@ -82,7 +82,8 @@ function login(configuration) {
     });
 
     // https://live-orders-api.takeaway.com/api/restaurant
-    sendHttpRequest(HTTP_METHOD_POST, "", THUISBEZORGD_PATH_LOGIN, 0, "", postData, verbose, (responseData => {
+    sendHttpRequest(HTTP_METHOD_POST, "", THUISBEZORGD_PATH_LOGIN, 0, "", postData, verbose, responseData => {
+      console.log('==== Response: ', responseData);
       try {
         // noinspection JSUnresolvedReference
         resolveFn(JSON.parse(responseData).access_token);
@@ -92,7 +93,10 @@ function login(configuration) {
           errorMessage: `Could not parse the response: ${e}`
         });
       }
-    }), rejectFn);
+    }, responseData => {
+      console.log('==== Response rejected: ', responseData);
+      rejectFn(responseData);
+    });
   });
 }
 
